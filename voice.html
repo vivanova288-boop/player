@@ -3,102 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <style>
-        body { margin: 0; background: transparent; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
-        
-        /* Основной контейнер */
-        #player-container {
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+        /* Убираем отступы, чтобы фрейм в Genially не имел лишних полей */
+        body, html { margin: 0; padding: 0; background: transparent; overflow: hidden; font-family: sans-serif; }
 
-        /* Развернутый вид */
-        .full-card {
-            width: 320px;
-            background: linear-gradient(145deg, #5e35b1, #211155);
-            border: 2px solid #FFD700;
-            border-radius: 20px;
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        /* Контейнер, который держит всё на месте */
+        #widget-wrapper {
             position: relative;
+            width: 300px; /* Фиксированная ширина */
+            height: 200px; /* Фиксированная высота */
+            margin: 10px;
         }
 
-        /* Кнопка сворачивания (в углу) */
-        .toggle-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            cursor: pointer;
-            color: #FFD700;
-            font-size: 18px;
+        /* Полная карточка */
+        #full-card {
+            width: 100%;
+            background: linear-gradient(180deg, #5e35b1, #211155);
+            border: 2px solid #FFD700;
+            border-radius: 15px;
+            padding: 15px;
+            box-sizing: border-box;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
             transition: 0.3s;
         }
 
-        /* Свернутый вид (Круглая кнопка) */
-        .mini-card {
-            width: 60px;
-            height: 60px;
+        /* Иконка сворачивания/разворачивания */
+        .toggle-icon {
+            position: absolute;
+            top: 8px;
+            left: 10px; /* Теперь строго в левом верхнем углу */
+            cursor: pointer;
+            z-index: 10;
+            transition: 0.2s;
+        }
+
+        /* Стиль свернутого значка (микрофончик) */
+        #mini-icon {
+            width: 40px;
+            height: 40px;
             background: #FFD700;
             border-radius: 50%;
-            display: flex;
+            display: none; /* Скрыт по умолчанию */
             justify-content: center;
             align-items: center;
-            cursor: pointer;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
-            font-size: 25px;
+            font-size: 20px;
             border: 2px solid #5e35b1;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
 
-        input {
-            width: 100%; padding: 12px; border-radius: 10px; border: none; 
-            margin: 15px 0; font-size: 16px; outline: none; box-sizing: border-box;
-        }
-
-        .speak-btn {
-            width: 100%; background: #FFD700; color: #000; border: none; 
-            padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px;
-        }
+        input { width: 90%; padding: 10px; border-radius: 8px; border: none; margin: 10px 0; outline: none; }
+        button { width: 90%; background: #FFD700; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        button:active { transform: scale(0.95); }
 
         .hidden { display: none !important; }
+        .flex { display: flex !important; }
     </style>
 </head>
 <body>
 
-    <div id="player-container">
-        <div id="fullView" class="full-card">
-            <span class="toggle-btn" onclick="toggleMode()">➖</span>
-            <div style="color: #FFD700; margin-bottom: 5px; font-weight: bold; font-size: 14px;">VOICE HELPER</div>
-            <input type="text" id="inp" placeholder="Type word...">
-            <button class="speak-btn" onclick="speak()">📢 LISTEN</button>
-        </div>
-
-        <div id="miniView" class="mini-card hidden" onclick="toggleMode()">
-            🎙️
-        </div>
+<div id="widget-wrapper">
+    <div class="toggle-icon" onclick="toggleWidget()">
+        <span id="close-sym" style="color:#FFD700; font-size: 24px; font-weight: bold;">−</span>
+        <div id="mini-icon">🎙️</div>
     </div>
 
-    <script>
-        function toggleMode() {
-            const full = document.getElementById('fullView');
-            const mini = document.getElementById('miniView');
-            
-            full.classList.toggle('hidden');
-            mini.classList.toggle('hidden');
-        }
+    <div id="full-card">
+        <div style="color: #FFD700; font-weight: bold; font-size: 11px; letter-spacing: 1px; margin-bottom: 5px; margin-left: 20px;">
+            VOICE HELPER
+        </div>
+        <input type="text" id="word-input" placeholder="Type here...">
+        <button onclick="playSound()">📢 LISTEN</button>
+    </div>
+</div>
 
-        function speak() {
-            var text = document.getElementById('inp').value;
-            if (!text) return;
-            var audio = new Audio("https://dict.youdao.com/dictvoice?le=eng&audio=" + encodeURIComponent(text));
-            audio.play();
-        }
+<script>
+    function toggleWidget() {
+        const card = document.getElementById('full-card');
+        const mini = document.getElementById('mini-icon');
+        const closeSym = document.getElementById('close-sym');
 
-        // Enter для озвучки
-        document.getElementById('inp').onkeypress = function(e) {
-            if (e.keyCode == 13) speak();
-        };
-    </script>
+        if (card.classList.contains('hidden')) {
+            card.classList.remove('hidden');
+            mini.classList.remove('flex');
+            closeSym.classList.remove('hidden');
+        } else {
+            card.classList.add('hidden');
+            mini.classList.add('flex');
+            closeSym.classList.add('hidden');
+        }
+    }
+
+    function playSound() {
+        const text = document.getElementById('word-input').value;
+        if(!text) return;
+        const audio = new Audio("https://dict.youdao.com/dictvoice?le=eng&audio=" + encodeURIComponent(text));
+        audio.play();
+    }
+</script>
+
 </body>
 </html>

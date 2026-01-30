@@ -2,173 +2,181 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Magic Audio Editor - Vivanova288 Edition</title>
+    <title>Ultimate Audio Editor for Genially</title>
     <style>
-        :root { --gold: #FFD700; --dark: #1a1a1a; }
-        body { font-family: 'Segoe UI', sans-serif; background: #2c3e50; color: white; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        :root { --gold: #FFD700; --violet: #5e35b1; }
+        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: white; margin: 0; display: flex; height: 100vh; }
         
-        #editor { width: 400px; background: var(--dark); padding: 25px; overflow-y: auto; border-right: 3px solid var(--gold); box-shadow: 10px 0 20px rgba(0,0,0,0.3); }
-        .control-group { margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
-        label { display: block; font-size: 13px; color: var(--gold); margin-bottom: 8px; font-weight: bold; }
-        input, textarea { width: 100%; background: #252525; border: 1px solid #444; color: white; padding: 8px; border-radius: 6px; box-sizing: border-box; }
+        #editor { width: 400px; background: #1a1a1a; padding: 25px; overflow-y: auto; border-right: 2px solid var(--gold); }
+        .group { margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
+        label { display: block; font-size: 13px; color: var(--gold); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+        input, textarea { width: 100%; background: #222; border: 1px solid #444; color: white; padding: 10px; border-radius: 6px; box-sizing: border-box; outline: none; }
+        input:focus { border-color: var(--gold); }
         
-        #preview-area { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle, #34495e 0%, #2c3e50 100%); position: relative; }
-        .code-output { width: 95%; height: 180px; background: #000; color: #FFD700; font-family: 'Consolas', monospace; padding: 12px; margin-top: 15px; white-space: pre-wrap; overflow-y: auto; font-size: 11px; border: 1px solid #444; }
+        #preview-area { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle, #2c3e50, #000); }
+        .code-out { width: 90%; height: 120px; background: #000; color: #0f0; font-family: monospace; padding: 10px; margin-top: 15px; font-size: 11px; border: 1px solid var(--gold); }
         
-        button { background: linear-gradient(135deg, #FFD700, #DAA520); border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; color: #000; transition: 0.3s; }
-        button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4); }
-        h2 { color: var(--gold); text-align: center; margin-top: 0; }
+        .main-btn { background: var(--gold); color: black; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; }
+        .main-btn:hover { background: white; transform: scale(1.02); }
     </style>
 </head>
 <body>
 
 <div id="editor">
-    <h2>🎨 Player Editor</h2>
+    <h2>🛠️ Настройка Виджета</h2>
     
-    <div class="control-group">
-        <label>Цвет интерфейса (фиолетовый, золотой и т.д.)</label>
-        <input type="color" id="mainColor" value="#5e35b1">
+    <div class="group">
+        <label>Цвет плеера</label>
+        <input type="color" id="uiColor" value="#5e35b1">
     </div>
 
-    <div class="control-group">
-        <label>Путь к обложке (из твоего репо)</label>
-        <input type="text" id="coverUrl" value="https://vivanova288-boop.github.io/player/cover.jpg">
+    <div class="group">
+        <label>Имя пользователя GitHub</label>
+        <input type="text" id="ghUser" value="vivanova288-boop">
     </div>
 
-    <div class="control-group">
-        <label>Список MP3 файлов (названия через запятую)</label>
-        <textarea id="fileNames" placeholder="например: song1.mp3, track2.mp3">track1.mp3, track2.mp3</textarea>
-        <small style="font-size: 11px; color: #888;">Просто впиши названия файлов, которые лежат в папке <b>player</b></small>
+    <div class="group">
+        <label>Название репозитория</label>
+        <input type="text" id="ghRepo" value="player">
     </div>
 
-    <button onclick="generateCode()">💎 СГЕНЕРИРОВАТЬ КОД ДЛЯ GENIALLY</button>
+    <div class="group">
+        <label>Список MP3 (через запятую)</label>
+        <textarea id="fileList" rows="3">track1.mp3, track2.mp3</textarea>
+        <small style="color:#888; font-size:11px;">Файлы должны лежать в корне папки <b>player</b></small>
+    </div>
+
+    <button class="main-btn" onclick="build()">💎 СОЗДАТЬ КОД</button>
     
-    <div id="output-container" style="margin-top: 20px;">
-        <label>Твой код (вставь в Genially -> Insert -> Others):</label>
-        <div class="code-output" id="finalCode"></div>
+    <div class="group" style="margin-top:20px;">
+        <label>Код для вставки в Genially:</label>
+        <div class="code-out" id="resCode"></div>
     </div>
 </div>
 
 <div id="preview-area">
-    <div id="player-mount"></div>
+    <div id="mount"></div>
 </div>
 
 <script>
-function generateCode() {
-    const color = document.getElementById('mainColor').value;
-    const cover = document.getElementById('coverUrl').value;
-    const repoBase = "https://raw.githubusercontent.com/vivanova288-boop/player/main/";
-    const fileNames = document.getElementById('fileNames').value.split(',').map(t => t.trim());
-    const tracksArray = fileNames.map(name => `'${repoBase}${name}'`).join(',');
+function build() {
+    const clr = document.getElementById('uiColor').value;
+    const user = document.getElementById('ghUser').value;
+    const repo = document.getElementById('ghRepo').value;
+    const files = document.getElementById('fileList').value.split(',').map(f => f.trim());
     
-    const playerHtml = `
-<div class="genially-fixed-audio" style="width: 460px; height: 400px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+    // Используем jsDelivr для стабильного стриминга аудио
+    const baseUrl = `https://cdn.jsdelivr.net/gh/${user}/${repo}/`;
+    const coverUrl = baseUrl + "cover.jpg";
+    const tracksFormatted = files.map(f => `'${baseUrl}${f}'`).join(',');
+
+    const finalHtml = `
+<div id="gn-player-root" style="width: 460px; height: 500px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: transparent;">
     <style>
-        #m-player { width: 420px; background: ${color}; border-radius: 20px; padding: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); color: white; transition: all 0.4s ease; font-family: sans-serif; position: relative; }
-        #m-player.collapsed { width: 70px; height: 70px; padding: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        .btn { cursor: pointer; transition: 0.2s; user-select: none; color: #FFD700; font-size: 26px; }
-        .btn:hover { transform: scale(1.2); filter: brightness(1.2); }
-        .vis { height: 6px; background: rgba(255,255,255,0.15); width: 100%; margin: 15px 0; border-radius: 3px; cursor: pointer; }
-        #prog { height: 100%; background: #FFD700; width: 0%; border-radius: 3px; }
-        .tts-inp { width: 100%; background: rgba(0,0,0,0.2); border: 1px solid #FFD700; border-radius: 6px; color: white; padding: 8px; font-size: 13px; outline: none; }
-        #pl-box { display: none; margin-top: 15px; background: rgba(0,0,0,0.3); border-radius: 10px; padding: 10px; max-height: 80px; overflow-y: auto; font-size: 12px; }
+        #p-body { width: 420px; background: ${clr}; border: 3px solid #FFD700; border-radius: 25px; padding: 25px; color: white; box-shadow: 0 10px 50px rgba(0,0,0,0.7); position: relative; transition: 0.4s; }
+        .p-btn { cursor: pointer; color: #FFD700; font-size: 30px; transition: 0.2s; }
+        .p-btn:hover { transform: scale(1.2); }
+        .p-cover { width: 100px; height: 100px; border-radius: 15px; background: url('${coverUrl}') center/cover; border: 2px solid #FFD700; }
+        .p-prog { height: 8px; background: rgba(0,0,0,0.3); border-radius: 4px; margin: 20px 0; cursor: pointer; overflow: hidden; }
+        #p-fill { height: 100%; background: #FFD700; width: 0%; box-shadow: 0 0 10px #FFD700; }
+        
+        /* Секция озвучки - Четкое окно */
+        .speech-box { background: rgba(0,0,0,0.4); border: 2px solid #FFD700; border-radius: 15px; margin-top: 20px; padding: 15px; }
+        .speech-input { width: 100%; background: transparent; border: none; border-bottom: 1px solid #FFD700; color: white; padding: 10px; font-size: 14px; outline: none; margin-bottom: 10px; }
+        .speech-btn { background: #FFD700; color: black; border: none; width: 100%; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .speech-btn:hover { background: white; }
+        
+        .collapsed { height: 80px !important; width: 80px !important; border-radius: 50% !important; padding: 0 !important; display: flex; justify-content: center; align-items: center; overflow: hidden; }
     </style>
 
-    <div id="m-player">
-        <div id="m-content">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <span style="font-size: 10px; letter-spacing: 2px;">LIBRARY AUDIO</span>
-                <span class="btn" onclick="toggleM()" style="font-size: 16px;">🌓</span>
+    <div id="p-body">
+        <div id="p-full">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <span style="font-size: 10px; letter-spacing: 2px; color: #FFD700;">AUDIO & SPEECH</span>
+                <span onclick="tglM()" style="cursor:pointer; color: #FFD700;">[ - ]</span>
             </div>
 
-            <div style="display: flex; align-items: center; gap: 20px;">
-                <div style="width: 100px; height: 100px; border-radius: 12px; background: url('${cover}') center/cover; box-shadow: 0 5px 15px rgba(0,0,0,0.4);"></div>
+            <div style="display: flex; gap: 20px; align-items: center;">
+                <div class="p-cover"></div>
                 <div>
-                    <div id="t-name" style="font-size: 16px; font-weight: bold; margin-bottom: 10px; color: #FFD700;">Magic Lesson</div>
-                    <div style="display: flex; gap: 15px; align-items: center;">
-                        <span class="btn" onclick="p_prev()">⏮</span>
-                        <span class="btn" id="p_play" onclick="p_toggle()">▶</span>
-                        <span class="btn" onclick="p_next()">⏭</span>
+                    <div style="font-weight: bold; font-size: 18px; color: #FFD700;">English Class</div>
+                    <div style="display: flex; gap: 15px; align-items: center; margin-top: 10px;">
+                        <span class="p-btn" onclick="go(-1)">⏮</span>
+                        <span class="p-btn" id="play" onclick="tglP()">▶</span>
+                        <span class="p-btn" onclick="go(1)">⏭</span>
                     </div>
                 </div>
             </div>
 
-            <div class="vis" onclick="p_seek(event)"><div id="prog"></div></div>
+            <div class="p-prog" onclick="sk(event)"><div id="p-fill"></div></div>
 
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <span onclick="toggleL()" style="cursor: pointer; font-size: 12px; color: #FFD700;">📜 Playlist</span>
-                <input type="range" min="0" max="1" step="0.1" value="0.5" style="width: 80px; accent-color: #FFD700;" oninput="p_vol(this.value)">
+            <div class="speech-box">
+                <label style="font-size: 10px; color: #FFD700; display: block; margin-bottom: 5px;">ENGLISH PRONUNCIATION:</label>
+                <textarea id="txtInp" class="speech-input" placeholder="Type here (e.g. 'Hello, how are you?')"></textarea>
+                <button class="speech-btn" onclick="spk()">🔊 LISTEN & LEARN</button>
             </div>
             
-            <div id="pl-box"></div>
-
-            <div style="display: flex; gap: 8px;">
-                <input type="text" id="p_tts" class="tts-inp" placeholder="English text...">
-                <button onclick="p_speak()" style="width: 40px; background: #FFD700; border: none; border-radius: 6px; cursor: pointer;">🔊</button>
-            </div>
+            <div style="text-align: center; margin-top: 15px; font-size: 10px; color: #FFD700; cursor: pointer;" onclick="tglL()">SHOW PLAYLIST</div>
+            <div id="pl" style="display:none; max-height: 60px; overflow-y: auto; margin-top: 5px;"></div>
         </div>
-        <div id="m-mini" style="display: none; font-size: 35px; cursor: pointer;" onclick="toggleM()">🎵</div>
+        <div id="p-mini" style="display:none; font-size: 40px; cursor:pointer;" onclick="tglM()">🎵</div>
     </div>
 
     <script>
-        const p_tracks = [${tracksArray}];
-        let p_cur = 0;
-        let p_audio = new Audio(p_tracks[p_cur]);
+        const tracks = [${tracksFormatted}];
+        let cur = 0;
+        let audio = new Audio(tracks[cur]);
         
-        function p_toggle() {
-            if (p_audio.paused) { p_audio.play(); document.getElementById('p_play').innerText = '⏸'; }
-            else { p_audio.pause(); document.getElementById('p_play').innerText = '▶'; }
+        function tglP() {
+            if (audio.paused) { audio.play(); document.getElementById('play').innerText = '⏸'; }
+            else { audio.pause(); document.getElementById('play').innerText = '▶'; }
         }
 
-        function p_next() { p_cur = (p_cur + 1) % p_tracks.length; p_playTrack(p_cur); }
-        function p_prev() { p_cur = (p_cur - 1 + p_tracks.length) % p_tracks.length; p_playTrack(p_cur); }
-
-        function p_playTrack(i) {
-            p_cur = i; p_audio.src = p_tracks[p_cur]; p_audio.play();
-            document.getElementById('p_play').innerText = '⏸';
+        function go(d) {
+            cur = (cur + d + tracks.length) % tracks.length;
+            audio.src = tracks[cur];
+            tglP();
         }
 
-        function p_vol(v) { p_audio.volume = v; }
-
-        function p_speak() {
-            const t = document.getElementById('p_tts').value;
+        function spk() {
+            const t = document.getElementById('txtInp').value;
             if (!t) return;
+            window.speechSynthesis.cancel(); // Остановить текущую речь
             const u = new SpeechSynthesisUtterance(t);
             u.lang = 'en-US'; u.rate = 0.8;
             window.speechSynthesis.speak(u);
         }
 
-        function toggleL() {
-            const b = document.getElementById('pl-box');
-            b.style.display = b.style.display === 'block' ? 'none' : 'block';
-            b.innerHTML = p_tracks.map((t, i) => \`<div onclick="p_playTrack(\${i})" style="padding: 5px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.1)">Track \${i+1}</div>\`).join('');
+        function tglM() {
+            const b = document.getElementById('p-body');
+            const f = document.getElementById('p-full');
+            const m = document.getElementById('p-mini');
+            b.classList.toggle('collapsed');
+            if(b.classList.contains('collapsed')) { f.style.display='none'; m.style.display='block'; }
+            else { f.style.display='block'; m.style.display='none'; }
         }
 
-        function toggleM() {
-            const m = document.getElementById('m-player');
-            const c = document.getElementById('m-content');
-            const i = document.getElementById('m-mini');
-            m.classList.toggle('collapsed');
-            if(m.classList.contains('collapsed')) { c.style.display='none'; i.style.display='block'; }
-            else { c.style.display='block'; i.style.display='none'; }
+        function tglL() {
+            const l = document.getElementById('pl');
+            l.style.display = l.style.display === 'block' ? 'none' : 'block';
+            l.innerHTML = tracks.map((t, i) => \`<div onclick="cur=\${i}; audio.src=tracks[\${i}]; tglP();" style="padding:5px; border-bottom: 1px solid rgba(255,215,0,0.1); font-size:12px; cursor:pointer;">Track \${i+1}</div>\`).join('');
         }
 
-        p_audio.ontimeupdate = () => {
-            const p = (p_audio.currentTime / p_audio.duration) * 100;
-            document.getElementById('prog').style.width = p + '%';
+        audio.ontimeupdate = () => {
+            document.getElementById('p-fill').style.width = (audio.currentTime / audio.duration) * 100 + '%';
         };
 
-        function p_seek(e) {
-            const rect = e.currentTarget.getBoundingClientRect();
-            p_audio.currentTime = ((e.clientX - rect.left) / rect.width) * p_audio.duration;
+        function sk(e) {
+            const r = e.currentTarget.getBoundingClientRect();
+            audio.currentTime = ((e.clientX - r.left) / r.width) * audio.duration;
         }
     <\/script>
 </div>`;
 
-    document.getElementById('finalCode').innerText = playerHtml;
-    document.getElementById('player-mount').innerHTML = playerHtml;
+    document.getElementById('resCode').innerText = finalHtml;
+    document.getElementById('mount').innerHTML = finalHtml;
 }
-generateCode();
+build();
 </script>
 </body>
 </html>

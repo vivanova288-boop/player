@@ -3,38 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <style>
-        body { margin: 0; background: transparent; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        .box {
-            width: 320px; background: linear-gradient(145deg, #5e35b1, #211155);
-            border: 2px solid #FFD700; border-radius: 20px; padding: 20px; text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        body { margin: 0; background: transparent; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        
+        /* Основной контейнер */
+        #player-container {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
+
+        /* Развернутый вид */
+        .full-card {
+            width: 320px;
+            background: linear-gradient(145deg, #5e35b1, #211155);
+            border: 2px solid #FFD700;
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        /* Кнопка сворачивания (в углу) */
+        .toggle-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            color: #FFD700;
+            font-size: 18px;
+            transition: 0.3s;
+        }
+
+        /* Свернутый вид (Круглая кнопка) */
+        .mini-card {
+            width: 60px;
+            height: 60px;
+            background: #FFD700;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+            font-size: 25px;
+            border: 2px solid #5e35b1;
+        }
+
         input {
             width: 100%; padding: 12px; border-radius: 10px; border: none; 
-            margin-bottom: 15px; font-size: 16px; outline: none; box-sizing: border-box;
+            margin: 15px 0; font-size: 16px; outline: none; box-sizing: border-box;
         }
-        button {
+
+        .speak-btn {
             width: 100%; background: #FFD700; color: #000; border: none; 
             padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px;
         }
-        button:active { transform: scale(0.98); }
+
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
-    <div class="box">
-        <div style="color: #FFD700; margin-bottom: 15px; font-weight: bold;">ENGLISH VOICE BOX</div>
-        <input type="text" id="inp" placeholder="Type a word...">
-        <button onclick="speak()">📢 LISTEN</button>
+
+    <div id="player-container">
+        <div id="fullView" class="full-card">
+            <span class="toggle-btn" onclick="toggleMode()">➖</span>
+            <div style="color: #FFD700; margin-bottom: 5px; font-weight: bold; font-size: 14px;">VOICE HELPER</div>
+            <input type="text" id="inp" placeholder="Type word...">
+            <button class="speak-btn" onclick="speak()">📢 LISTEN</button>
+        </div>
+
+        <div id="miniView" class="mini-card hidden" onclick="toggleMode()">
+            🎙️
+        </div>
     </div>
 
     <script>
+        function toggleMode() {
+            const full = document.getElementById('fullView');
+            const mini = document.getElementById('miniView');
+            
+            full.classList.toggle('hidden');
+            mini.classList.toggle('hidden');
+        }
+
         function speak() {
             var text = document.getElementById('inp').value;
             if (!text) return;
-            // Метод через Google Audio (самый надежный)
             var audio = new Audio("https://dict.youdao.com/dictvoice?le=eng&audio=" + encodeURIComponent(text));
             audio.play();
         }
+
+        // Enter для озвучки
+        document.getElementById('inp').onkeypress = function(e) {
+            if (e.keyCode == 13) speak();
+        };
     </script>
 </body>
 </html>

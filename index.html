@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Magic Audio Editor for Genially</title>
+    <style>
+        :root { --gold: #FFD700; --dark: #1a1a1a; }
+        body { font-family: 'Segoe UI', sans-serif; background: #2c3e50; color: white; margin: 0; display: flex; height: 100vh; }
+        
+        /* Стили Редактора */
+        #editor { width: 350px; background: var(--dark); padding: 20px; overflow-y: auto; border-right: 2px solid var(--gold); }
+        .control-group { margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        label { display: block; font-size: 12px; color: var(--gold); margin-bottom: 5px; }
+        input, select { width: 100%; background: #333; border: 1px solid #444; color: white; padding: 5px; border-radius: 4px; }
+        
+        /* Превью */
+        #preview-area { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: url('https://www.transparenttextures.com/patterns/dark-matter.png'); }
+        .code-output { width: 90%; height: 150px; background: #000; color: #0f0; font-family: monospace; padding: 10px; margin-top: 20px; white-space: pre-wrap; overflow-y: auto; font-size: 11px; }
+        
+        button { background: var(--gold); border: none; padding: 10px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; width: 100%; }
+        button:hover { filter: brightness(1.2); }
+    </style>
+</head>
+<body>
+
+<div id="editor">
+    <h2>🎨 Настройка Плеера</h2>
+    
+    <div class="control-group">
+        <label>Основной цвет интерфейса</label>
+        <input type="color" id="mainColor" value="#5e35b1">
+    </div>
+
+    <div class="control-group">
+        <label>URL обложки (картинка)</label>
+        <input type="text" id="coverUrl" value="https://vivanova288-boop.github.io/cover.jpg">
+    </div>
+
+    <div class="control-group">
+        <label>Плейлист (прямые ссылки через запятую)</label>
+        <textarea id="playlistLinks" style="width:100%; height:80px; background:#333; color:white;">https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3, https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3</textarea>
+        <small style="font-size: 10px; color: #888;">Для GitHub используй ссылки формата raw.githubusercontent...</small>
+    </div>
+
+    <button onclick="generateCode()">💎 ПОЛУЧИТЬ КОД ДЛЯ GENIALLY</button>
+    
+    <div id="output-container">
+        <label>Скопируй этот код в Genially (Insert -> Others):</label>
+        <div class="code-output" id="finalCode"></div>
+    </div>
+</div>
+
+<div id="preview-area">
+    <h3 style="color: var(--gold)">ПРЕДПРОСМОТР (Interactive)</h3>
+    <div id="player-mount"></div>
+</div>
+
+<script>
+function generateCode() {
+    const color = document.getElementById('mainColor').value;
+    const cover = document.getElementById('coverUrl').value;
+    const tracks = document.getElementById('playlistLinks').value.split(',').map(t => t.trim());
+    
+    const playerHtml = `
+<div id="player-wrapper" style="width: 450px; font-family: sans-serif; position: relative;">
+    <style>
+        #main-container { background: ${color}; border-radius: 15px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); color: white; transition: all 0.3s ease; overflow: hidden; }
+        .collapsed { height: 40px !important; padding: 5px 20px !important; width: 150px !important; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .cover { width: 120px; height: 120px; border-radius: 10px; background: url('${cover}') center/cover; margin-right: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .controls { display: flex; align-items: center; gap: 15px; }
+        .btn { cursor: pointer; font-size: 24px; transition: 0.2s; user-select: none; }
+        .btn:hover { transform: scale(1.2); color: #FFD700; }
+        #playlist { display: none; margin-top: 15px; background: rgba(0,0,0,0.2); border-radius: 10px; padding: 10px; max-height: 100px; overflow-y: auto; font-size: 12px; }
+        .tts-box { margin-top: 15px; display: flex; gap: 5px; }
+        .tts-input { flex-grow: 1; border-radius: 5px; border: none; padding: 5px; font-size: 12px; }
+        .visualizer { height: 3px; background: rgba(255,255,255,0.2); width: 100%; margin: 15px 0; position: relative; }
+        #progress { height: 100%; background: #FFD700; width: 0%; transition: 0.1s; }
+        .volume-slider { width: 60px; accent-color: #FFD700; }
+    </style>
+
+    <div id="main-container">
+        <div class="header">
+            <span style="font-weight: bold; font-size: 12px;">PLAYER</span>
+            <span class="btn" onclick="togglePlayer()" style="font-size: 16px;">🌓</span>
+        </div>
+
+        <div id="content">
+            <div style="display: flex; align-items: center;">
+                <div class="cover"></div>
+                <div>
+                    <div id="track-name" style="font-size: 14px; margin-bottom: 10px;">Music Track</div>
+                    <div class="controls">
+                        <span class="btn" onclick="prev()">⏮</span>
+                        <span class="btn" id="playBtn" onclick="togglePlay()">▶</span>
+                        <span class="btn" onclick="next()">⏭</span>
+                        <span class="btn" onclick="toggleRandom()" id="rndBtn" style="font-size: 14px; opacity: 0.5;">🔀</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="visualizer"><div id="progress"></div></div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="btn" onclick="togglePlaylist()" style="font-size: 14px;">📜 Playlist</span>
+                <input type="range" class="volume-slider" min="0" max="1" step="0.1" value="0.5" oninput="setVol(this.value)">
+            </div>
+
+            <div id="playlist"></div>
+
+            <div class="tts-box">
+                <input type="text" id="ttsInput" class="tts-input" placeholder="Введите английский текст...">
+                <button onclick="speak()" style="width: auto; padding: 5px 10px; font-size: 10px; background: #FFD700; border: none; border-radius: 5px; cursor: pointer;">🔊</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const tracks = [${tracks.map(t => `'${t}'`).join(',')}];
+        let current = 0;
+        let isRandom = false;
+        const audio = new Audio(tracks[current]);
+        
+        function togglePlay() {
+            if (audio.paused) { audio.play(); document.getElementById('playBtn').innerText = '⏸'; }
+            else { audio.pause(); document.getElementById('playBtn').innerText = '▶'; }
+        }
+
+        function togglePlayer() {
+            const cont = document.getElementById('main-container');
+            const inner = document.getElementById('content');
+            cont.classList.toggle('collapsed');
+            inner.style.display = cont.classList.contains('collapsed') ? 'none' : 'block';
+        }
+
+        function speak() {
+            const text = document.getElementById('ttsInput').value;
+            if (!text) return;
+            const ut = new SpeechSynthesisUtterance(text);
+            ut.lang = 'en-US';
+            ut.rate = 0.9;
+            window.speechSynthesis.speak(ut);
+        }
+
+        function togglePlaylist() {
+            const pl = document.getElementById('playlist');
+            pl.style.display = pl.style.display === 'block' ? 'none' : 'block';
+            pl.innerHTML = tracks.map((t, i) => \`<div onclick="playTrack(\${i})" style="padding: 5px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.1)">Track \${i+1}</div>\`).join('');
+        }
+
+        function playTrack(i) {
+            current = i;
+            audio.src = tracks[current];
+            audio.play();
+            document.getElementById('playBtn').innerText = '⏸';
+        }
+
+        function next() {
+            current = isRandom ? Math.floor(Math.random()*tracks.length) : (current + 1) % tracks.length;
+            playTrack(current);
+        }
+
+        function prev() {
+            current = (current - 1 + tracks.length) % tracks.length;
+            playTrack(current);
+        }
+
+        function toggleRandom() {
+            isRandom = !isRandom;
+            document.getElementById('rndBtn').style.opacity = isRandom ? '1' : '0.5';
+        }
+
+        function setVol(v) { audio.volume = v; }
+
+        audio.ontimeupdate = () => {
+            const p = (audio.currentTime / audio.duration) * 100;
+            document.getElementById('progress').style.width = p + '%';
+        };
+    <\/script>
+</div>`;
+
+    document.getElementById('finalCode').innerText = playerHtml;
+    document.getElementById('player-mount').innerHTML = playerHtml;
+}
+
+// Запуск при загрузке
+generateCode();
+</script>
+
+</body>
+</html>

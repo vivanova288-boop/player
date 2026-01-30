@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Voice Widget Editor</title>
+    <style>
+        :root { --gold: #FFD700; --purp: #5e35b1; }
+        body { font-family: sans-serif; background: #1a1a1a; color: white; display: flex; margin: 0; height: 100vh; }
+        #panel { width: 300px; background: #222; padding: 20px; border-right: 2px solid var(--gold); overflow-y: auto; }
+        #preview-area { flex: 1; display: flex; justify-content: center; align-items: center; background: #333; position: relative; }
+        .config-item { margin-bottom: 15px; }
+        label { display: block; font-size: 12px; color: var(--gold); margin-bottom: 5px; }
+        input, select { width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #444; background: #111; color: white; }
+        .code-out { width: 100%; height: 100px; background: #000; color: #0f0; font-family: monospace; font-size: 10px; margin-top: 10px; padding: 5px; border: 1px solid #555; }
+        .btn { background: var(--gold); color: black; border: none; padding: 10px; width: 100%; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div id="panel">
+    <h3>🎨 Настройка виджета</h3>
+    
+    <div class="config-item">
+        <label>Основной цвет (HEX)</label>
+        <input type="color" id="baseColor" value="#5e35b1" oninput="update()">
+    </div>
+
+    <div class="config-item">
+        <label>Цвет рамки и кнопок</label>
+        <input type="color" id="accentColor" value="#FFD700" oninput="update()">
+    </div>
+
+    <div class="config-item">
+        <label>Скругление углов (px)</label>
+        <input type="range" id="radius" min="0" max="30" value="15" oninput="update()">
+    </div>
+
+    <div class="config-item">
+        <label>Текст заголовка</label>
+        <input type="text" id="titleText" value="VOICE HELPER" oninput="update()">
+    </div>
+
+    <hr>
+    <p style="font-size: 11px;">Скопируй этот код и замени им всё содержимое в твоем <b>voice.html</b> на GitHub:</p>
+    <textarea id="finalCode" class="code-out" readonly></textarea>
+    <button class="btn" onclick="copyCode()">📋 Копировать код</button>
+</div>
+
+<div id="preview-area">
+    <div id="widget-preview">
+        </div>
+</div>
+
+<script>
+function update() {
+    const col1 = document.getElementById('baseColor').value;
+    const col2 = document.getElementById('accentColor').value;
+    const rad = document.getElementById('radius').value;
+    const title = document.getElementById('titleText').value;
+
+    const template = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body, html { margin: 0; padding: 0; background: transparent; overflow: hidden; font-family: sans-serif; }
+        #anchor { position: absolute; top: 5px; left: 5px; display: flex; flex-direction: column; align-items: flex-start; }
+        #card { 
+            width: 280px; background: \${col1}; border: 2px solid \${col2}; border-radius: \${rad}px; padding: 15px; 
+            text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.4); transition: 0.3s;
+        }
+        .btn-tgl { background: \${col2}; width: 30px; height: 30px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; margin-bottom: 5px; border: 2px solid \${col1}; font-weight: bold; }
+        #mini { width: 50px; height: 50px; background: \${col2}; border-radius: 50%; display: none; justify-content: center; align-items: center; font-size: 25px; border: 2px solid \${col1}; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        input { width: 100%; padding: 10px; border-radius: 8px; border: none; margin: 10px 0; box-sizing: border-box; }
+        button { width: 100%; background: \${col2}; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .shock { animation: shake 0.2s infinite; border-color: #0ff !important; background: #f00 !important; }
+        @keyframes shake { 0% { transform: translate(1px, 1px); } 50% { transform: translate(-2px, -1px); } 100% { transform: translate(1px, 1px); } }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+<div id="anchor">
+    <div id="btn-m" class="btn-tgl" onclick="tgl()">−</div>
+    <div id="mini" onclick="tgl()">🎙️</div>
+    <div id="card">
+        <div style="color:\${col2}; font-size:11px; font-weight:bold;">\${title}</div>
+        <input type="text" id="inp" placeholder="Type word...">
+        <button onclick="check()">📢 LISTEN</button>
+    </div>
+</div>
+<script>
+    function tgl() {
+        const c = document.getElementById('card'), m = document.getElementById('mini'), b = document.getElementById('btn-m');
+        if (c.classList.contains('hidden')) { c.classList.remove('hidden'); m.style.display='none'; b.style.display='flex'; } 
+        else { c.classList.add('hidden'); m.style.display='flex'; b.style.display='none'; }
+    }
+    function check() {
+        const val = document.getElementById('inp').value.toLowerCase();
+        const card = document.getElementById('card');
+        if (val === 'error') {
+            new Audio("https://www.soundjay.com/buttons/beep-04.mp3").play();
+            card.classList.add('shock');
+            setTimeout(() => card.classList.remove('shock'), 1000);
+        } else if (val) {
+            new Audio("https://dict.youdao.com/dictvoice?le=eng&audio=" + encodeURIComponent(val)).play();
+        }
+    }
+<\/script>
+</body>
+</html>`;
+
+    document.getElementById('finalCode').value = template.replace(/\${col1}/g, col1).replace(/\${col2}/g, col2).replace(/\${rad}/g, rad).replace(/\${title}/g, title);
+    
+    // Обновляем превью (упрощенно)
+    document.getElementById('preview-area').innerHTML = `<div style="transform: scale(0.8); background:\${col1}; border: 2px solid \${col2}; border-radius:\${rad}px; padding: 20px; text-align: center; color: \${col2}; width: 250px;">
+        <b>\${title}</b><br><br>
+        <div style="background:white; height:30px; border-radius:5px;"></div><br>
+        <div style="background:\${col2}; height:40px; border-radius:5px; color:black; display:flex; align-items:center; justify-content:center; font-weight:bold;">LISTEN</div>
+    </div>`.replace(/\${col1}/g, col1).replace(/\${col2}/g, col2).replace(/\${rad}/g, rad).replace(/\${title}/g, title);
+}
+
+function copyCode() {
+    const copyText = document.getElementById("finalCode");
+    copyText.select();
+    document.execCommand("copy");
+    alert("Код скопирован! Теперь вставь его в voice.html на GitHub.");
+}
+
+update();
+</script>
+</body>
+</html>

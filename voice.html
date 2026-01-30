@@ -6,16 +6,14 @@
         body, html { margin: 0; padding: 0; background: transparent; overflow: hidden; font-family: sans-serif; }
         #anchor { position: absolute; top: 5px; left: 5px; display: flex; flex-direction: column; align-items: flex-start; }
         #card { 
-            width: 280px; background: #5e35b1; border: 2px solid #FFD700; border-radius: 15px; padding: 15px; 
+            width: 280px; background: #35b14e; border: 2px solid #d8ba13; border-radius: 15px; padding: 15px; 
             text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.4); transition: 0.3s;
         }
-        .btn-tgl { background: #FFD700; width: 30px; height: 30px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; margin-bottom: 5px; border: 2px solid #5e35b1; font-weight: bold; }
-        #mini { width: 50px; height: 50px; background: #FFD700; border-radius: 50%; display: none; justify-content: center; align-items: center; font-size: 25px; border: 2px solid #5e35b1; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .btn-tgl { background: #d8ba13; width: 30px; height: 30px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; margin-bottom: 5px; border: 2px solid #35b14e; font-weight: bold; }
+        #mini { width: 50px; height: 50px; background: #d8ba13; border-radius: 50%; display: none; justify-content: center; align-items: center; font-size: 25px; border: 2px solid #35b14e; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         input { width: 100%; padding: 10px; border-radius: 8px; border: none; margin: 10px 0; box-sizing: border-box; }
-        button { width: 100%; background: #FFD700; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        
-        /* Эффект шока ⚡ */
-        .shock { animation: shake 0.2s infinite; border-color: #00ffff !important; box-shadow: 0 0 20px #00ffff !important; background: #ff0000 !important; }
+        button { width: 100%; background: #d8ba13; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .shock { animation: shake 0.2s infinite; border-color: #0ff !important; background: #f00 !important; }
         @keyframes shake { 0% { transform: translate(1px, 1px); } 50% { transform: translate(-2px, -1px); } 100% { transform: translate(1px, 1px); } }
         .hidden { display: none !important; }
     </style>
@@ -25,9 +23,9 @@
     <div id="btn-m" class="btn-tgl" onclick="tgl()">−</div>
     <div id="mini" onclick="tgl()">🎙️</div>
     <div id="card">
-        <div style="color:#FFD700; font-size:11px; font-weight:bold;">VOICE & SHOCK ⚡</div>
-        <input type="text" id="inp" placeholder="Type word (try 'error')...">
-        <button onclick="check()">📢 LISTEN / CHECK</button>
+        <div style="color:#d8ba13; font-size:11px; font-weight:bold;">VOICE HELPER</div>
+        <input type="text" id="inp" placeholder="Type word...">
+        <button onclick="check()">📢 LISTEN</button>
     </div>
 </div>
 <script>
@@ -40,8 +38,7 @@
         const val = document.getElementById('inp').value.toLowerCase();
         const card = document.getElementById('card');
         if (val === 'error') {
-            // Эффект шока для лягушки
-            new Audio("https://www.soundjay.com/buttons/beep-04.mp3").play(); // Временный звук разряда
+            new Audio("https://www.soundjay.com/buttons/beep-04.mp3").play();
             card.classList.add('shock');
             setTimeout(() => card.classList.remove('shock'), 1000);
         } else if (val) {

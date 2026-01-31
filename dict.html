@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <style>
         body, html { margin: 0; padding: 0; background: transparent; overflow: hidden; font-family: sans-serif; }
-        /* Контейнер прижат к ПРАВОМУ верхнему углу */
+        /* Виджет прижат к ПРАВОМУ верхнему углу */
         #anchor { position: absolute; top: 5px; right: 5px; display: flex; flex-direction: column; align-items: flex-end; }
         
         #card { 
             width: 280px; background: #1a1a2e; border: 2px solid #00ffff; border-radius: 15px; padding: 15px; 
-            text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.5); transition: 0.3s;
+            text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.5); 
         }
 
         /* Кнопка сворачивания СПРАВА */
@@ -28,7 +28,7 @@
         input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #00ffff; background: #000; color: #fff; margin: 10px 0; box-sizing: border-box; outline: none; }
         button { width: 100%; background: #00ffff; color: #1a1a2e; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; }
         
-        #res { margin-top: 10px; padding: 10px; background: rgba(0,255,255,0.1); border-radius: 8px; color: #00ffff; font-size: 14px; display: none; line-height: 1.4; text-align: left; }
+        #res { margin-top: 10px; padding: 12px; background: rgba(0,255,255,0.1); border-radius: 8px; color: #00ffff; font-size: 15px; display: none; line-height: 1.4; text-align: left; border: 1px solid rgba(0,255,255,0.2); }
         .hidden { display: none !important; }
     </style>
 </head>
@@ -37,35 +37,36 @@
     <div id="btn-m" class="btn-tgl" onclick="tgl()">−</div>
     <div id="mini" onclick="tgl()">📖</div>
     <div id="card">
-        <div style="color:#00ffff; font-size:11px; font-weight:bold; letter-spacing:1px;">DICTIONARY</div>
-        <input type="text" id="inp" placeholder="Type word...">
+        <div style="color:#00ffff; font-size:11px; font-weight:bold; letter-spacing:1px;">SMART DICTIONARY</div>
+        <input type="text" id="inp" placeholder="Type word or phrase...">
         <button onclick="tr()">TRANSLATE</button>
         <div id="res"></div>
     </div>
 </div>
 <script>
     function tgl() {
-        const c = document.getElementById('card'), m = document.getElementById('mini'), b = document.getElementById('btn-m');
+        var c = document.getElementById('card'), m = document.getElementById('mini'), b = document.getElementById('btn-m');
         if (c.style.display === 'none') { c.style.display = 'block'; m.style.display = 'none'; b.style.display = 'flex'; } 
         else { c.style.display = 'none'; m.style.display = 'flex'; b.style.display = 'none'; }
     }
     
     function tr() {
-        const text = document.getElementById('inp').value;
-        const resDiv = document.getElementById('res');
+        var text = document.getElementById('inp').value;
+        var resDiv = document.getElementById('res');
         if (!text) return;
         
         resDiv.style.display = 'block';
-        resDiv.innerText = 'Searching...';
+        resDiv.innerText = 'Thinking...';
         
-        // Используем прямой URL без сложных переменных для надежности
-        var url = "https://api.mymemory.translated.net/get?q=" + encodeURIComponent(text) + "&langpair=en|ru";
+        // Используем проверенный скрипт Google Translate
+        var url = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ru&dt=t&q=" + encodeURIComponent(text);
         
         fetch(url)
             .then(function(response) { return response.json(); })
             .then(function(data) {
-                var result = data.responseData.translatedText;
-                resDiv.innerHTML = "<b>Result:</b><br>" + result.toLowerCase();
+                // Google возвращает данные в сложном массиве, достаем сам текст
+                var translation = data[0][0][0];
+                resDiv.innerHTML = "<b>Перевод:</b><br>" + translation;
             })
             .catch(function() {
                 resDiv.innerText = "Error. Try again.";

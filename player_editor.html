@@ -16,7 +16,11 @@
     </style>
 </head>
 <body>
-
+<canvas id="bg-canvas" style="position: fixed; top: 0; left: 0; z-index: -1; pointer-events: none;"></canvas>
+<script>
+    const icons = ['🎵', '🎶', '🎧', '📻', '🎸'];
+    setupBackground(icons);
+</script>
 <div id="settings">
     <h3>🛠 ГОРИЗОНТАЛЬНЫЙ ПЛЕЕР</h3>
     <div class="section">

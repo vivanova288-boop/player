@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Voice Helper Editor</title>
+    <title>Voice Editor Pro</title>
     <style>
         :root { --accent: #ffcc00; }
         body { font-family: sans-serif; background: #0f0f1a; color: white; display: flex; margin: 0; height: 100vh; }
@@ -10,79 +10,50 @@
         #preview-box { flex: 1; display: flex; justify-content: center; align-items: center; background: #1a1a2e; }
         .section { background: #22223b; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
         label { display: block; font-size: 11px; margin: 10px 0 5px; color: #aaa; text-transform: uppercase; }
-        input, select { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #444; background: #000; color: #fff; box-sizing: border-box; }
+        input { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #444; background: #000; color: #fff; box-sizing: border-box; }
         .btn-main { background: var(--accent); color: #000; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        textarea { width: 100%; height: 80px; background: #000; color: #0f0; font-family: monospace; font-size: 10px; margin-top: 10px; border-radius: 5px; }
+        textarea { width: 100%; height: 100px; background: #000; color: #0f0; font-family: monospace; font-size: 10px; margin-top: 10px; border: none; }
     </style>
 </head>
 <body>
-
 <div id="settings">
-    <h3>🎙️ НАСТРОЙКА ОЗВУЧКИ</h3>
+    <h3>🎙️ РЕДАКТОР ОЗВУЧКИ</h3>
     <div class="section">
-        <label>Цвет фона</label>
-        <input type="color" id="bgCol" value="#28a745" oninput="upd()">
-        <label>Цвет кнопки (Акцент)</label>
-        <input type="color" id="accCol" value="#ffcc00" oninput="upd()">
+        <label>Цвет фона карточки</label>
+        <input type="color" id="bgCol" value="#35b14e" oninput="upd()">
+        <label>Цвет акцента (кнопка)</label>
+        <input type="color" id="accCol" value="#d8ba13" oninput="upd()">
     </div>
-    <div class="section">
-        <label>Скорость речи</label>
-        <select id="vSpeed" onchange="upd()">
-            <option value="0.8">Медленно</option>
-            <option value="1" selected>Нормально</option>
-            <option value="1.2">Быстро</option>
-        </select>
-    </div>
-    <button class="btn-main" onclick="copyC()">📋 КОПИРОВАТЬ КОД ДЛЯ GENIALLY</button>
+    <button class="btn-main" onclick="copyC()">📋 КОПИРОВАТЬ КОД</button>
     <textarea id="finalCode" readonly></textarea>
 </div>
-
-<div id="preview-box">
-    <div id="v-view"></div>
-</div>
-
+<div id="preview-box"><div id="v-view"></div></div>
 <script>
 function upd() {
     const bg = document.getElementById('bgCol').value;
     const acc = document.getElementById('accCol').value;
-    const speed = document.getElementById('vSpeed').value;
-
-    const fullCode = `
-<div id="v-root" style="display: flex; flex-direction: column; align-items: center; font-family: sans-serif;">
-    <div id="v-minus" onclick="window.vTgl()" style="width:32px; height:32px; background:${acc}; color:#000; border-radius:50%; display:flex; justify-content:center; align-items:center; cursor:pointer; margin-bottom:10px; font-weight:bold; border:2px solid #000; font-size:20px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">−</div>
-    
-    <div id="v-mini" onclick="window.vTgl()" style="display:none; width:50px; height:50px; background:${acc}; border-radius:50%; justify-content:center; align-items:center; font-size:25px; border:2px solid #000; cursor:pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">🎙️</div>
-
-    <div id="v-card" style="width:280px; background:${bg}; border:2px solid ${acc}; border-radius:20px; padding:20px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.5); box-sizing: border-box;">
-        <h4 style="color:${acc}; margin:0 0 10px 0; font-size:12px; letter-spacing:1px;">VOICE HELPER</h4>
-        <input id="v-text" type="text" placeholder="Type word..." style="width:100%; padding:10px; border-radius:10px; border:none; background:#fff; color:#333; margin-bottom:15px; box-sizing: border-box;">
-        <button onclick="window.vSpeak()" style="width:100%; padding:12px; background:${acc}; border:none; border-radius:10px; font-weight:bold; cursor:pointer; display:flex; justify-content:center; align-items:center; gap:10px;">
-            <span>📢</span> LISTEN
-        </button>
+    const fullCode = `<div id="v-root" style="display: flex; flex-direction: column; align-items: center; font-family: sans-serif;">
+    <div id="v-minus" onclick="window.vTgl()" style="width:32px; height:32px; background:${acc}; color:#000; border-radius:50%; display:flex; justify-content:center; align-items:center; cursor:pointer; margin-bottom:10px; font-weight:bold; border:2px solid #000; font-size:20px;">−</div>
+    <div id="v-mini" onclick="window.vTgl()" style="display:none; width:50px; height:50px; background:${acc}; border-radius:50%; justify-content:center; align-items:center; font-size:25px; border:2px solid #000; cursor:pointer;">🎙️</div>
+    <div id="v-card" style="width:280px; background:${bg}; border:2px solid ${acc}; border-radius:20px; padding:20px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+        <div style="color:${acc}; font-size:11px; font-weight:bold; margin-bottom:10px;">VOICE HELPER</div>
+        <input type="text" id="v-inp" placeholder="Type word..." style="width:100%; padding:10px; border-radius:8px; border:none; margin-bottom:15px; box-sizing:border-box;">
+        <button onclick="window.vSpeak()" style="width:100%; background:${acc}; border:none; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer;">📢 LISTEN</button>
     </div>
 </div>
-
 <script>
-(function() {
+(function(){
     window.vTgl = function() {
-        const card = document.getElementById('v-card'), mini = document.getElementById('v-mini'), minus = document.getElementById('v-minus');
-        if(card.style.display === 'none') {
-            card.style.display = 'block'; mini.style.display = 'none'; minus.style.display = 'flex';
-        } else {
-            card.style.display = 'none'; mini.style.display = 'flex'; minus.style.display = 'none';
-        }
+        const c = document.getElementById('v-card'), m = document.getElementById('v-mini'), b = document.getElementById('v-minus');
+        if(c.style.display === 'none') { c.style.display = 'block'; m.style.display = 'none'; b.style.display = 'flex'; }
+        else { c.style.display = 'none'; m.style.display = 'flex'; b.style.display = 'none'; }
     };
-
     window.vSpeak = function() {
-        const txt = document.getElementById('v-text').value;
-        if(!txt) return;
-        const msg = new SpeechSynthesisUtterance(txt);
-        msg.rate = ${speed};
-        window.speechSynthesis.speak(msg);
+        const val = document.getElementById('v-inp').value.toLowerCase();
+        if (val) new Audio("https://dict.youdao.com/dictvoice?le=eng&audio=" + encodeURIComponent(val)).play();
     };
 })();
 <\/script>`;
-
     document.getElementById('finalCode').value = fullCode;
     document.getElementById('v-view').innerHTML = fullCode;
 }

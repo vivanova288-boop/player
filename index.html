@@ -2,113 +2,118 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Daft Punk Style Editor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Widget Hub</title>
     <style>
-        :root { --gold: #FFD700; --violet: #5e35b1; }
-        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: white; display: flex; margin: 0; height: 100vh; }
-        #sidebar { width: 350px; background: #1a1a1a; padding: 25px; border-right: 2px solid var(--gold); overflow-y: auto; }
-        .control { margin-bottom: 20px; }
-        label { display: block; font-size: 12px; color: var(--gold); margin-bottom: 8px; font-weight: bold; }
-        input, textarea { width: 100%; background: #222; border: 1px solid #444; color: white; padding: 10px; border-radius: 6px; box-sizing: border-box; }
-        .main-btn { background: var(--gold); color: black; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; transition: 0.3s; }
-        .main-btn:hover { background: white; transform: scale(1.02); }
-        #preview { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle, #2c3e50, #000); }
-        .copy-status { color: #0f0; display: none; margin-top: 10px; font-size: 14px; text-align: center; }
+        :root {
+            --accent: #00ffff;
+            --bg: #0f0f1a;
+            --card-bg: #161625;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        h1 {
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            margin-bottom: 50px;
+            text-shadow: 0 0 15px var(--accent);
+        }
+
+        .hub-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            width: 90%;
+            max-width: 1000px;
+        }
+
+        .widget-card {
+            background: var(--card-bg);
+            border: 2px solid #222;
+            border-radius: 20px;
+            padding: 40px 20px;
+            text-align: center;
+            text-decoration: none;
+            color: white;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        .widget-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-10px);
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);
+        }
+
+        .icon {
+            font-size: 50px;
+            margin-bottom: 20px;
+            display: block;
+            filter: drop-shadow(0 0 10px rgba(255,255,255,0.3));
+        }
+
+        .widget-card h2 {
+            margin: 0 0 10px 0;
+            font-size: 1.5rem;
+            color: var(--accent);
+        }
+
+        .widget-card p {
+            font-size: 0.9rem;
+            color: #aaa;
+            margin: 0;
+        }
+
+        .footer {
+            margin-top: 60px;
+            font-size: 0.8rem;
+            color: #444;
+        }
     </style>
 </head>
 <body>
 
-<div id="sidebar">
-    <h2 style="color:var(--gold); margin-top:0;">🎹 НАСТРОЙКА</h2>
-    
-    <div class="control">
-        <label>Цвет плеера (HEX)</label>
-        <input type="color" id="col" value="#5e35b1">
+    <h1>Project Hub</h1>
+
+    <div class="hub-container">
+        
+        <a href="player_editor.html" class="widget-card">
+            <span class="icon">🎵</span>
+            <h2>Music Player</h2>
+            <p>Горизонтальный плеер с плейлистом и обложкой</p>
+        </a>
+
+        <a href="voice.html" class="widget-card">
+            <span class="icon">🎙️</span>
+            <h2>Voice Helper</h2>
+            <p>Инструмент для озвучивания текста голосом</p>
+        </a>
+
+        <a href="dict.html" class="widget-card">
+            <span class="icon">📖</span>
+            <h2>Smart Dictionary</h2>
+            <p>Переводчик и личный словарь определений</p>
+        </a>
+
     </div>
 
-    <div class="control">
-        <label>GitHub User / Repo</label>
-        <input type="text" id="repo" value="vivanova288-boop/player">
-    </div>
+    <div class="footer">vivanova288-boop • 2026</div>
 
-    <div class="control">
-        <label>Список MP3 файлов (через запятую)</label>
-        <textarea id="files" rows="3">track1.mp3, track2.mp3</textarea>
-    </div>
-
-    <button class="main-btn" onclick="copyCode()">💎 КОПИРОВАТЬ ДЛЯ GENIALLY</button>
-    <div id="status" class="copy-status">✅ Код скопирован!</div>
-</div>
-
-<div id="preview">
-    <h3 style="color:var(--gold)">ПРЕДПРОСМОТР</h3>
-    <div id="mount"></div>
-</div>
-
-<script>
-function generate() {
-    const c = document.getElementById('col').value;
-    const r = document.getElementById('repo').value;
-    const f = document.getElementById('files').value.split(',').map(s => s.trim());
-    const base = `https://cdn.jsdelivr.net/gh/${r}/main/`;
-    const tracks = f.map(t => `'${base}${t}'`).join(',');
-
-    return `<div style="width:550px; height:400px; display:flex; align-items:center; justify-content:center;">
-    <style>
-        #v-card { width: 500px; background: #e0e0e0; border-radius: 20px; overflow: hidden; box-shadow: 0 15px 40px rgba(0,0,0,0.6); font-family: Arial; }
-        .v-top { background: linear-gradient(180deg, ${c} 0%, #222 150%); padding: 25px; display: flex; gap: 20px; height: 260px; box-sizing: border-box; }
-        .v-cover { width: 140px; height: 140px; background: url('${base}cover.jpg') center/cover; border-radius: 12px; border: 3px solid rgba(255,255,255,0.2); }
-        .v-list { flex-grow: 1; background: rgba(0,0,0,0.3); border-radius: 12px; padding: 10px; overflow-y: auto; color: white; }
-        .v-item { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); cursor: pointer; font-size: 12px; }
-        .v-item:hover { color: #FFD700; background: rgba(255,255,255,0.05); }
-        .v-bot { background: #f0f0f0; padding: 20px; display: flex; justify-content: center; gap: 30px; align-items: center; border-top: 1px solid #ccc; }
-        .v-btn { width: 55px; height: 55px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px solid #bbb; font-size: 22px; color: #333; transition: 0.2s; }
-        .v-btn:hover { transform: scale(1.1); box-shadow: 0 0 15px ${c}66; }
-        .v-tts { margin-top: 15px; background: white; border-radius: 8px; display: flex; padding: 5px; border: 1px solid #ccc; }
-    </style>
-    <div id="v-card">
-        <div class="v-top">
-            <div>
-                <div class="v-cover"></div>
-                <div class="v-tts">
-                    <input type="text" id="v-in" style="border:none; outline:none; flex:1; padding:5px; font-size:12px;" placeholder="English...">
-                    <button onclick="v_spk()" style="border:none; background:none; cursor:pointer;">🔊</button>
-                </div>
-            </div>
-            <div class="v-list" id="v-pl"></div>
-        </div>
-        <div class="v-bot">
-            <div class="v-btn" onclick="v_go(-1)">⏮</div>
-            <div class="v-btn" id="v-play" onclick="v_tgl()" style="width:70px; height:70px; font-size:30px;">▶</div>
-            <div class="v-btn" onclick="v_go(1)">⏭</div>
-        </div>
-    </div>
-    <script>
-        var v_trks=[${tracks}], v_idx=0, v_aud=new Audio(v_trks[v_idx]);
-        function v_tgl(){ if(v_aud.paused){ v_aud.play(); document.getElementById('v-play').innerText='⏸'; } else { v_aud.pause(); document.getElementById('v-play').innerText='▶'; } }
-        function v_go(d){ v_idx=(v_idx+d+v_trks.length)%v_trks.length; v_aud.src=v_trks[v_idx]; v_tgl(); }
-        function v_spk(){ var t=document.getElementById('v-in').value; if(!t)return; window.speechSynthesis.cancel(); var u=new SpeechSynthesisUtterance(t); u.lang='en-US'; u.rate=0.8; window.speechSynthesis.speak(u); }
-        window.onload=function(){ 
-            var l=document.getElementById('v-pl'); 
-            v_trks.forEach((t,i)=>{ var d=document.createElement('div'); d.className='v-item'; d.innerText='▶ TRACK '+(i+1); d.onclick=()=>{v_idx=i; v_aud.src=v_trks[i]; v_tgl();}; l.appendChild(d); });
-        }
-    <\/script>
-</div>`;
-}
-
-function copyCode() {
-    const code = generate();
-    const el = document.createElement('textarea');
-    el.value = code;
-    document.body.appendChild(el);
-    el.select();
-    document.execCommand('copy');
-    document.body.removeChild(el);
-    
-    document.getElementById('mount').innerHTML = code;
-    document.getElementById('status').style.display = 'block';
-    setTimeout(() => document.getElementById('status').style.display = 'none', 3000);
-}
-</script>
 </body>
 </html>

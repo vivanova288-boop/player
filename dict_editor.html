@@ -5,37 +5,96 @@
     <title>Dict Editor Pro</title>
     <style>
         :root { --accent: #00ffff; }
-        body { font-family: sans-serif; background: #0f0f1a; color: white; display: flex; margin: 0; height: 100vh; }
-        #settings { width: 350px; background: #161625; padding: 20px; border-right: 2px solid var(--accent); }
-        #preview-box { flex: 1; display: flex; justify-content: center; align-items: center; background: #1a1a2e; }
+        /* Темный фон и скрытие прокрутки */
+        body { font-family: sans-serif; background: #0f0f1a; color: white; display: flex; margin: 0; height: 100vh; overflow: hidden; }
+        
+        /* Полупрозрачные панели для эффекта глубины */
+        #settings { width: 350px; background: rgba(22, 22, 37, 0.85); padding: 20px; border-right: 2px solid var(--accent); z-index: 10; overflow-y: auto; }
+        #preview-box { flex: 1; display: flex; justify-content: center; align-items: center; background: transparent; z-index: 10; }
+        
+        label { display: block; font-size: 11px; margin: 15px 0 5px; color: #aaa; text-transform: uppercase; }
         input { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #444; background: #000; color: #fff; box-sizing: border-box; }
-        .btn-main { background: var(--accent); color: #000; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        textarea { width: 100%; height: 100px; background: #000; color: #0f0; font-family: monospace; font-size: 10px; margin-top: 10px; border: none; }
+        .btn-main { background: var(--accent); color: #000; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 20px; }
+        textarea { width: 100%; height: 120px; background: #000; color: #0f0; font-family: monospace; font-size: 10px; margin-top: 15px; border: none; padding: 10px; box-sizing: border-box; }
     </style>
 </head>
 <body>
-    <canvas id="bg-canvas" style="position: fixed; top: 0; left: 0; z-index: -1; pointer-events: none;"></canvas>
-<script>
-    const icons = ['📖', 'A', 'B', '文', '📝', '🌍'];
-    setupBackground(icons);
-</script>
+
+<canvas id="bg-canvas" style="position: fixed; top: 0; left: 0; z-index: 1; pointer-events: none;"></canvas>
+
 <div id="settings">
     <h3>📖 РЕДАКТОР СЛОВАРЯ</h3>
-    <label>Цвет фона</label>
+    <label>Цвет фона карточки</label>
     <input type="color" id="bgCol" value="#1a1a2e" oninput="upd()">
-    <label>Цвет акцента</label>
+    <label>Цвет акцента (кнопка)</label>
     <input type="color" id="accCol" value="#00ffff" oninput="upd()">
+    
     <button class="btn-main" onclick="copyC()">📋 КОПИРОВАТЬ КОД</button>
     <textarea id="finalCode" readonly></textarea>
 </div>
-<div id="preview-box"><div id="d-view"></div></div>
+
+<div id="preview-box">
+    <div id="d-view"></div>
+</div>
+
 <script>
+// 1. Описание функции фона (ставим ПЕРЕД вызовом)
+function setupBackground(items) {
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.onresize = resize;
+    resize();
+
+    class Particle {
+        constructor() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.text = items[Math.floor(Math.random() * items.length)];
+            this.size = Math.random() * 20 + 15;
+            this.speed = Math.random() * 0.4 + 0.2;
+            this.opacity = Math.random() * 0.4;
+        }
+        update() {
+            this.y -= this.speed;
+            if (this.y < -30) {
+                this.y = canvas.height + 30;
+                this.x = Math.random() * canvas.width;
+            }
+        }
+        draw() {
+            ctx.globalAlpha = this.opacity;
+            ctx.fillStyle = "#ffffff";
+            ctx.font = `${this.size}px serif`;
+            ctx.fillText(this.text, this.x, this.y);
+        }
+    }
+
+    for (let i = 0; i < 35; i++) particles.push(new Particle());
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => { p.update(); p.draw(); });
+        requestAnimationFrame(animate);
+    }
+    animate();
+}
+
+// 2. Запуск анимации с буквами и книгами
+setupBackground(['📖', 'A', 'B', '文', '📝', '🌍', 'Z', 'Ω']);
+
+// 3. Логика обновления предпросмотра
 function upd() {
     const bg = document.getElementById('bgCol').value;
     const acc = document.getElementById('accCol').value;
     const fullCode = `<div id="d-root" style="display: flex; flex-direction: column; align-items: center; font-family: sans-serif;">
     <div id="d-minus" onclick="window.dTgl()" style="width:32px; height:32px; background:${acc}; color:#000; border-radius:50%; display:flex; justify-content:center; align-items:center; cursor:pointer; margin-bottom:10px; font-weight:bold; border:2px solid #000; font-size:20px;">−</div>
-    <div id="d-mini" onclick="window.dTgl()" style="display:none; width:50px; height:50px; background:${acc}; border-radius:50%; display:none; justify-content:center; align-items:center; font-size:25px; border:2px solid #000; cursor:pointer;">📖</div>
+    <div id="d-mini" onclick="window.dTgl()" style="display:none; width:50px; height:50px; background:${acc}; border-radius:50%; justify-content:center; align-items:center; font-size:25px; border:2px solid #000; cursor:pointer;">📖</div>
     <div id="d-card" style="width:280px; background:${bg}; border:2px solid ${acc}; border-radius:20px; padding:20px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
         <div style="color:${acc}; font-size:11px; font-weight:bold; margin-bottom:10px;">SMART DICTIONARY</div>
         <input type="text" id="d-inp" placeholder="Type word..." style="width:100%; padding:10px; border-radius:8px; border:1px solid ${acc}; background:#000; color:#fff; margin-bottom:10px; box-sizing:border-box;">
@@ -63,58 +122,14 @@ function upd() {
     document.getElementById('finalCode').value = fullCode;
     document.getElementById('d-view').innerHTML = fullCode;
 }
-function copyC() { document.getElementById("finalCode").select(); document.execCommand("copy"); }
-upd();
-</script>
-    <script>
-function setupBackground(items) {
-    const canvas = document.getElementById('bg-canvas');
-    const ctx = canvas.getContext('2d');
-    let particles = [];
 
-    function resize() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-    }
-    window.onresize = resize;
-    resize();
-
-    class Particle {
-        constructor() {
-            this.x = Math.random() * canvas.width;
-            this.y = Math.random() * canvas.height;
-            this.text = items[Math.floor(Math.random() * items.length)];
-            this.size = Math.random() * 20 + 10;
-            this.speed = Math.random() * 0.5 + 0.2;
-            this.angle = Math.random() * Math.PI * 2;
-            this.opacity = Math.random() * 0.5;
-        }
-        update() {
-            this.y -= this.speed;
-            this.x += Math.sin(this.angle) * 0.5;
-            this.angle += 0.01;
-            if (this.y < -30) {
-                this.y = canvas.height + 30;
-                this.x = Math.random() * canvas.width;
-            }
-        }
-        draw() {
-            ctx.globalAlpha = this.opacity;
-            ctx.font = `${this.size}px Arial`;
-            ctx.fillText(this.text, this.x, this.y);
-        }
-    }
-
-    for (let i = 0; i < 30; i++) particles.push(new Particle());
-
-    function animate() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = "rgba(255, 255, 255, 0.5)"; // Цвет иконок
-        particles.forEach(p => { p.update(); p.draw(); });
-        requestAnimationFrame(animate);
-    }
-    animate();
+function copyC() { 
+    document.getElementById("finalCode").select(); 
+    document.execCommand("copy"); 
+    alert("Код скопирован!");
 }
+
+upd();
 </script>
 </body>
 </html>

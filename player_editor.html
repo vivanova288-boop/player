@@ -92,21 +92,28 @@ function upd() {
     const rawT = document.getElementById('tracks').value.split('\n').filter(s => s.trim() !== '');
     const jsonT = JSON.stringify(rawT);
 
-    const fullCode = `<div id="p-root" style="width: 480px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; font-family: sans-serif;">
+// Найди в коде место, где формируется fullCode, и замени на это:
+const fullCode = `<div id="p-root" style="width: 480px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; font-family: sans-serif;">
     <div id="p-minus-btn" onclick="window.pViewTgl()" style="width:32px; height:32px; background:${acc}; color:${bg}; border-radius:50%; display:flex; justify-content:center; align-items:center; cursor:pointer; margin-bottom:10px; font-weight:bold; border:2px solid #000; font-size:20px;">−</div>
     <div id="p-mini-icon" onclick="window.pViewTgl()" style="display:none; width:50px; height:50px; background:${acc}; border-radius:50%; justify-content:center; align-items:center; font-size:25px; border:2px solid #000; cursor:pointer;">🎵</div>
-    <div id="p-main-card" style="width:100%; background:${bg}; border:2px solid ${acc}; border-radius:20px; padding:20px; color:${acc}; display:flex; gap:20px; align-items: center;">
+    
+    <div id="p-main-card" style="width:100%; background:${bg}; border:2px solid ${acc}; border-radius:20px; padding:20px; color:${acc}; display:flex; gap:20px; align-items: center; box-sizing: border-box;">
         <div style="flex-shrink:0;">
-            <div style="width:140px; height:140px; border-radius:15px; background:url('${cov}') center/cover; border:2px solid ${acc};"></div>
-            <div id="p-track-name" style="font-size:12px; margin-top:10px; font-weight:bold; text-align:center; width:140px; overflow:hidden; white-space:nowrap;">Track 1</div>
+            <div style="width:120px; height:120px; border-radius:15px; background:url('${cov}') center/cover; border:2px solid ${acc};"></div>
+            <div style="display:flex; align-items:center; gap:5px; margin-top:10px;">
+                <span>🔈</span>
+                <input type="range" id="p-vol" min="0" max="1" step="0.05" value="0.5" oninput="document.getElementById('pAudioPlayer').volume=this.value" style="width:100%; cursor:pointer; accent-color:${acc};">
+            </div>
         </div>
-        <div style="flex-grow:1; display:flex; flex-direction:column; gap:15px;">
+
+        <div style="flex-grow:1; display:flex; flex-direction:column; gap:10px;">
+            <div id="p-track-name" style="font-size:12px; font-weight:bold; text-align:center;">Track 1</div>
             <div style="display:flex; justify-content:center; align-items:center; gap:15px;">
                 <button onclick="window.pPrevT()" style="background:none; border:none; color:${acc}; cursor:pointer; font-size:20px;">⏮</button>
                 <button id="pPlayBtn" onclick="window.pTglAudio()" style="background:${acc}; color:${bg}; border:none; width:45px; height:45px; border-radius:50%; cursor:pointer; font-size:20px;">▶</button>
                 <button onclick="window.pNextT()" style="background:none; border:none; color:${acc}; cursor:pointer; font-size:20px;">⏭</button>
             </div>
-            <div id="p-list-area" style="background:rgba(0,0,0,0.3); border-radius:10px; padding:10px; height:80px; overflow-y:auto; font-size:11px; border:1px solid rgba(255,255,255,0.1);"></div>
+            <div id="p-list-area" style="background:rgba(0,0,0,0.3); border-radius:10px; padding:10px; height:60px; overflow-y:auto; font-size:11px; border:1px solid rgba(255,255,255,0.1);"></div>
         </div>
         <audio id="pAudioPlayer"></audio>
     </div>
@@ -115,16 +122,21 @@ function upd() {
 (function() {
     var list = ${jsonT};
     var cur = 0, a = document.getElementById('pAudioPlayer');
+    a.volume = 0.5; // Громкость по умолчанию
+    
     window.pViewTgl = function() {
         var card = document.getElementById('p-main-card'), mini = document.getElementById('p-mini-icon'), minus = document.getElementById('p-minus-btn');
-        if(card.style.display === 'none') { card.style.display = 'flex'; minus.style.display = 'flex'; mini.style.display = 'none'; } 
-        else { card.style.display = 'none'; minus.style.display = 'none'; mini.style.display = 'flex'; }
+        card.style.display = (card.style.display === 'none') ? 'flex' : 'none';
+        minus.style.display = (minus.style.display === 'none') ? 'flex' : 'none';
+        mini.style.display = (mini.style.display === 'none') ? 'flex' : 'none';
     };
+    
     window.pSetT = function(i) {
         cur = i; a.src = list[cur];
         document.getElementById('p-track-name').innerText = list[cur].split('/').pop();
         document.getElementById('p-list-area').innerHTML = list.map((t, x) => "<div style='padding:4px; cursor:pointer; opacity:"+(x==cur?1:0.5)+"' onclick='window.pSetT("+x+");a.play();document.getElementById(\"pPlayBtn\").innerText=\"⏸\"'>" + (x+1) + ". " + t.split('/').pop() + "</div>").join('');
     };
+    
     window.pTglAudio = function() { if(a.paused) { a.play(); document.getElementById('pPlayBtn').innerText = '⏸'; } else { a.pause(); document.getElementById('pPlayBtn').innerText = '▶'; } };
     window.pNextT = function() { window.pSetT((cur + 1) % list.length); a.play(); document.getElementById('pPlayBtn').innerText = '⏸'; };
     window.pPrevT = function() { window.pSetT((cur - 1 + list.length) % list.length); a.play(); document.getElementById('pPlayBtn').innerText = '⏸'; };

@@ -8,44 +8,52 @@
         body { font-family: sans-serif; background: #0f0f1a; color: white; display: flex; margin: 0; height: 100vh; }
         #settings { width: 350px; background: #161625; padding: 20px; border-right: 2px solid var(--accent); }
         #preview-box { flex: 1; display: flex; justify-content: center; align-items: center; background: #1a1a2e; }
-        .btn-main { background: var(--accent); color: #000; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 20px; }
-        textarea { width: 100%; height: 100px; background: #000; color: #0f0; font-family: monospace; font-size: 10px; margin-top: 10px; }
+        input { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #444; background: #000; color: #fff; box-sizing: border-box; }
+        .btn-main { background: var(--accent); color: #000; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        textarea { width: 100%; height: 100px; background: #000; color: #0f0; font-family: monospace; font-size: 10px; margin-top: 10px; border: none; }
     </style>
 </head>
 <body>
 <div id="settings">
-    <h3>📖 НАСТРОЙКА СЛОВАРЯ</h3>
-    <button class="btn-main" onclick="copyC()">📋 КОПИРОВАТЬ КОД ДЛЯ GENIALLY</button>
+    <h3>📖 РЕДАКТОР СЛОВАРЯ</h3>
+    <label>Цвет фона</label>
+    <input type="color" id="bgCol" value="#1a1a2e" oninput="upd()">
+    <label>Цвет акцента</label>
+    <input type="color" id="accCol" value="#00ffff" oninput="upd()">
+    <button class="btn-main" onclick="copyC()">📋 КОПИРОВАТЬ КОД</button>
     <textarea id="finalCode" readonly></textarea>
 </div>
 <div id="preview-box"><div id="d-view"></div></div>
-
 <script>
 function upd() {
-    const acc = "#00ffff";
-    const bg = "#1a1a2e";
-    const fullCode = `
-<div id="d-root" style="display: flex; flex-direction: column; align-items: center; font-family: sans-serif;">
+    const bg = document.getElementById('bgCol').value;
+    const acc = document.getElementById('accCol').value;
+    const fullCode = `<div id="d-root" style="display: flex; flex-direction: column; align-items: center; font-family: sans-serif;">
     <div id="d-minus" onclick="window.dTgl()" style="width:32px; height:32px; background:${acc}; color:#000; border-radius:50%; display:flex; justify-content:center; align-items:center; cursor:pointer; margin-bottom:10px; font-weight:bold; border:2px solid #000; font-size:20px;">−</div>
-    <div id="d-mini" onclick="window.dTgl()" style="display:none; width:50px; height:50px; background:${acc}; border-radius:50%; justify-content:center; align-items:center; font-size:25px; border:2px solid #000; cursor:pointer;">📖</div>
-    <div id="d-card" style="width:300px; background:#161625; border:2px solid ${acc}; border-radius:20px; padding:20px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
-        <h4 style="color:${acc}; margin:0 0 15px 0;">SMART DICTIONARY</h4>
-        <input id="d-in" type="text" placeholder="Type word..." style="width:100%; padding:10px; border-radius:10px; border:none; background:#000; color:#fff; margin-bottom:10px; box-sizing:border-box;">
-        <button onclick="window.dTr()" style="width:100%; padding:10px; background:${acc}; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">TRANSLATE</button>
-        <div id="d-res" style="margin-top:15px; color:#fff; font-size:14px; min-height:20px;"></div>
+    <div id="d-mini" onclick="window.dTgl()" style="display:none; width:50px; height:50px; background:${acc}; border-radius:50%; display:none; justify-content:center; align-items:center; font-size:25px; border:2px solid #000; cursor:pointer;">📖</div>
+    <div id="d-card" style="width:280px; background:${bg}; border:2px solid ${acc}; border-radius:20px; padding:20px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+        <div style="color:${acc}; font-size:11px; font-weight:bold; margin-bottom:10px;">SMART DICTIONARY</div>
+        <input type="text" id="d-inp" placeholder="Type word..." style="width:100%; padding:10px; border-radius:8px; border:1px solid ${acc}; background:#000; color:#fff; margin-bottom:10px; box-sizing:border-box;">
+        <button onclick="window.dTr()" style="width:100%; background:${acc}; color:#000; border:none; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer;">TRANSLATE</button>
+        <div id="d-res" style="margin-top:10px; color:${acc}; font-size:14px; text-align:left; display:none;"></div>
     </div>
 </div>
 <script>
-window.dTgl = function() {
-    const c = document.getElementById('d-card'), m = document.getElementById('d-mini'), n = document.getElementById('d-minus');
-    if(c.style.display==='none'){c.style.display='block';m.style.display='none';n.style.display='flex';}
-    else{c.style.display='none';m.style.display='flex';n.style.display='none';}
-};
-window.dTr = function() {
-    const val = document.getElementById('d-in').value;
-    document.getElementById('d-res').innerText = "Translating: " + val + "...";
-    // Тут будет логика перевода
-};
+(function(){
+    window.dTgl = function() {
+        const c = document.getElementById('d-card'), m = document.getElementById('d-mini'), b = document.getElementById('d-minus');
+        if(c.style.display === 'none') { c.style.display = 'block'; m.style.display = 'none'; b.style.display = 'flex'; }
+        else { c.style.display = 'none'; m.style.display = 'flex'; b.style.display = 'none'; }
+    };
+    window.dTr = function() {
+        const t = document.getElementById('d-inp').value;
+        const res = document.getElementById('d-res');
+        if(!t) return;
+        res.style.display = 'block'; res.innerText = '...';
+        fetch("https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ru&dt=t&q=" + encodeURIComponent(t))
+            .then(r => r.json()).then(d => { res.innerHTML = "<b>Перевод:</b> " + d[0][0][0]; });
+    };
+})();
 <\/script>`;
     document.getElementById('finalCode').value = fullCode;
     document.getElementById('d-view').innerHTML = fullCode;

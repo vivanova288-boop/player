@@ -2,131 +2,118 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Voice Widget Editor</title>
+    <title>Horizontal Pro Player Editor</title>
     <style>
-        :root { --gold: #FFD700; --purp: #5e35b1; }
-        body { font-family: sans-serif; background: #1a1a1a; color: white; display: flex; margin: 0; height: 100vh; }
-        #panel { width: 300px; background: #222; padding: 20px; border-right: 2px solid var(--gold); overflow-y: auto; }
-        #preview-area { flex: 1; display: flex; justify-content: center; align-items: center; background: #333; position: relative; }
-        .config-item { margin-bottom: 15px; }
-        label { display: block; font-size: 12px; color: var(--gold); margin-bottom: 5px; }
-        input, select { width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #444; background: #111; color: white; }
-        .code-out { width: 100%; height: 100px; background: #000; color: #0f0; font-family: monospace; font-size: 10px; margin-top: 10px; padding: 5px; border: 1px solid #555; }
-        .btn { background: var(--gold); color: black; border: none; padding: 10px; width: 100%; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        :root { --accent: #00ffff; }
+        body { font-family: sans-serif; background: #0f0f1a; color: white; display: flex; margin: 0; height: 100vh; }
+        #settings { width: 380px; background: #161625; padding: 20px; border-right: 2px solid var(--accent); overflow-y: auto; }
+        #preview-box { flex: 1; display: flex; justify-content: center; align-items: center; background: #1a1a2e; }
+        .section { background: #22223b; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
+        label { display: block; font-size: 11px; margin: 10px 0 5px; color: #aaa; text-transform: uppercase; }
+        input, textarea { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #444; background: #000; color: #fff; box-sizing: border-box; }
+        .btn-main { background: var(--accent); color: #000; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        .code-res { height: 80px; background: #000; color: #0f0; font-family: monospace; font-size: 10px; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-<div id="panel">
-    <h3>🎨 Настройка виджета</h3>
-    
-    <div class="config-item">
-        <label>Основной цвет (HEX)</label>
-        <input type="color" id="baseColor" value="#5e35b1" oninput="update()">
+<div id="settings">
+    <h3>🛠 НАСТРОЙКА ГОРИЗОНТ. ПЛЕЕРА</h3>
+    <div class="section">
+        <label>Цвет фона</label>
+        <input type="color" id="bgCol" value="#1a1a2e" oninput="upd()">
+        <label>Цвет акцента</label>
+        <input type="color" id="accCol" value="#00ffff" oninput="upd()">
     </div>
-
-    <div class="config-item">
-        <label>Цвет рамки и кнопок</label>
-        <input type="color" id="accentColor" value="#FFD700" oninput="update()">
+    <div class="section">
+        <label>Обложка (URL)</label>
+        <input type="text" id="cover" value="https://media.tenor.com/eMrZP9HBkqEAAAAi/frkst-reccords.gif" oninput="upd()">
+        <label>MP3 ссылки</label>
+        <textarea id="tracks" rows="4" oninput="upd()">https://vivanova288-boop.github.io/player/1.mp3
+https://vivanova288-boop.github.io/player/2.mp3</textarea>
     </div>
-
-    <div class="config-item">
-        <label>Скругление углов (px)</label>
-        <input type="range" id="radius" min="0" max="30" value="15" oninput="update()">
-    </div>
-
-    <div class="config-item">
-        <label>Текст заголовка</label>
-        <input type="text" id="titleText" value="VOICE HELPER" oninput="update()">
-    </div>
-
-    <hr>
-    <p style="font-size: 11px;">Скопируй этот код и замени им всё содержимое в твоем <b>voice.html</b> на GitHub:</p>
-    <textarea id="finalCode" class="code-out" readonly></textarea>
-    <button class="btn" onclick="copyCode()">📋 Копировать код</button>
+    <button class="btn-main" onclick="copyC()">📋 КОПИРОВАТЬ КОД ДЛЯ GENIALLY</button>
+    <textarea id="finalCode" class="code-res" readonly></textarea>
 </div>
+<div id="preview-box"><div id="p-view"></div></div>
 
-<div id="preview-area">
-    <div id="widget-preview">
+<script>
+function upd() {
+    const bg = document.getElementById('bgCol').value;
+    const acc = document.getElementById('accCol').value;
+    const cov = document.getElementById('cover').value;
+    const rawT = document.getElementById('tracks').value.split('\n').filter(s => s.trim() !== '');
+    const jsonT = JSON.stringify(rawT);
+
+    const fullCode = `
+<div id="p-root" style="width: 480px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; font-family: sans-serif;">
+    
+    <div id="p-tgl-btn" onclick="window.pViewTgl()" style="width:32px; height:32px; background:${acc}; color:${bg}; border-radius:50%; display:flex; justify-content:center; align-items:center; cursor:pointer; margin-bottom:10px; font-weight:bold; border:2px solid #000; box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-size:20px;">−</div>
+    
+    <div id="p-mini-icon" onclick="window.pViewTgl()" style="display:none; width:50px; height:50px; background:${acc}; border-radius:50%; justify-content:center; align-items:center; font-size:25px; border:2px solid #000; cursor:pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">🎵</div>
+
+    <div id="p-main-card" style="width:100%; background:${bg}; border:2px solid ${acc}; border-radius:20px; padding:20px; color:${acc}; display:flex; gap:20px; box-shadow:0 10px 30px rgba(0,0,0,0.5); box-sizing: border-box; align-items: center;">
+        
+        <div style="flex-shrink:0;">
+            <div style="width:140px; height:140px; border-radius:15px; background:url('${cov}') center/cover; border:2px solid ${acc};"></div>
+            <div id="p-track-name" style="font-size:12px; margin-top:10px; font-weight:bold; text-align:center; width:140px; overflow:hidden; white-space:nowrap;">Track 1</div>
         </div>
-</div>
 
-<script>
-function update() {
-    const col1 = document.getElementById('baseColor').value;
-    const col2 = document.getElementById('accentColor').value;
-    const rad = document.getElementById('radius').value;
-    const title = document.getElementById('titleText').value;
-
-    const template = `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <style>
-        body, html { margin: 0; padding: 0; background: transparent; overflow: hidden; font-family: sans-serif; }
-        #anchor { position: absolute; top: 5px; left: 5px; display: flex; flex-direction: column; align-items: flex-start; }
-        #card { 
-            width: 280px; background: \${col1}; border: 2px solid \${col2}; border-radius: \${rad}px; padding: 15px; 
-            text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.4); transition: 0.3s;
-        }
-        .btn-tgl { background: \${col2}; width: 30px; height: 30px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; margin-bottom: 5px; border: 2px solid \${col1}; font-weight: bold; }
-        #mini { width: 50px; height: 50px; background: \${col2}; border-radius: 50%; display: none; justify-content: center; align-items: center; font-size: 25px; border: 2px solid \${col1}; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        input { width: 100%; padding: 10px; border-radius: 8px; border: none; margin: 10px 0; box-sizing: border-box; }
-        button { width: 100%; background: \${col2}; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .shock { animation: shake 0.2s infinite; border-color: #0ff !important; background: #f00 !important; }
-        @keyframes shake { 0% { transform: translate(1px, 1px); } 50% { transform: translate(-2px, -1px); } 100% { transform: translate(1px, 1px); } }
-        .hidden { display: none !important; }
-    </style>
-</head>
-<body>
-<div id="anchor">
-    <div id="btn-m" class="btn-tgl" onclick="tgl()">−</div>
-    <div id="mini" onclick="tgl()">🎙️</div>
-    <div id="card">
-        <div style="color:\${col2}; font-size:11px; font-weight:bold;">\${title}</div>
-        <input type="text" id="inp" placeholder="Type word...">
-        <button onclick="check()">📢 LISTEN</button>
+        <div style="flex-grow:1; display:flex; flex-direction:column; gap:15px;">
+            <div style="display:flex; justify-content:center; align-items:center; gap:15px;">
+                <button onclick="window.pPrevT()" style="background:none; border:none; color:${acc}; cursor:pointer; font-size:20px;">⏮</button>
+                <button id="pPlayBtn" onclick="window.pTglAudio()" style="background:${acc}; color:${bg}; border:none; width:45px; height:45px; border-radius:50%; cursor:pointer; font-size:20px;">▶</button>
+                <button onclick="window.pNextT()" style="background:none; border:none; color:${acc}; cursor:pointer; font-size:20px;">⏭</button>
+            </div>
+            
+            <div id="p-list-area" style="background:rgba(0,0,0,0.3); border-radius:10px; padding:10px; height:80px; overflow-y:auto; font-size:11px; border:1px solid rgba(255,255,255,0.1);"></div>
+            
+            <div style="display:flex; justify-content:center; gap:20px; font-size:20px;">
+                <span id="pRandIco" onclick="window.pTglRnd()" style="cursor:pointer; opacity:0.3;">🔀</span>
+                <span onclick="window.pTglLst()" style="cursor:pointer;">📜</span>
+            </div>
+        </div>
+        <audio id="pAudioPlayer"></audio>
     </div>
 </div>
+
 <script>
-    function tgl() {
-        const c = document.getElementById('card'), m = document.getElementById('mini'), b = document.getElementById('btn-m');
-        if (c.classList.contains('hidden')) { c.classList.remove('hidden'); m.style.display='none'; b.style.display='flex'; } 
-        else { c.classList.add('hidden'); m.style.display='flex'; b.style.display='none'; }
-    }
-    function check() {
-        const val = document.getElementById('inp').value.toLowerCase();
-        const card = document.getElementById('card');
-        if (val === 'error') {
-            new Audio("https://www.soundjay.com/buttons/beep-04.mp3").play();
-            card.classList.add('shock');
-            setTimeout(() => card.classList.remove('shock'), 1000);
-        } else if (val) {
-            new Audio("https://dict.youdao.com/dictvoice?le=eng&audio=" + encodeURIComponent(val)).play();
-        }
-    }
-<\/script>
-</body>
-</html>`;
-
-    document.getElementById('finalCode').value = template.replace(/\${col1}/g, col1).replace(/\${col2}/g, col2).replace(/\${rad}/g, rad).replace(/\${title}/g, title);
+(function() {
+    var list = ${jsonT};
+    var cur = 0, rnd = false, a = document.getElementById('pAudioPlayer');
     
-    // Обновляем превью (упрощенно)
-    document.getElementById('preview-area').innerHTML = `<div style="transform: scale(0.8); background:\${col1}; border: 2px solid \${col2}; border-radius:\${rad}px; padding: 20px; text-align: center; color: \${col2}; width: 250px;">
-        <b>\${title}</b><br><br>
-        <div style="background:white; height:30px; border-radius:5px;"></div><br>
-        <div style="background:\${col2}; height:40px; border-radius:5px; color:black; display:flex; align-items:center; justify-content:center; font-weight:bold;">LISTEN</div>
-    </div>`.replace(/\${col1}/g, col1).replace(/\${col2}/g, col2).replace(/\${rad}/g, rad).replace(/\${title}/g, title);
-}
+    window.pViewTgl = function() {
+        var card = document.getElementById('p-main-card'), mini = document.getElementById('p-mini-icon'), btn = document.getElementById('p-tgl-btn');
+        if(card.style.display === 'none') {
+            card.style.display = 'flex'; mini.style.display = 'none'; btn.innerText = '−';
+        } else {
+            card.style.display = 'none'; mini.style.display = 'flex'; btn.innerText = '+';
+        }
+    };
 
-function copyCode() {
-    const copyText = document.getElementById("finalCode");
-    copyText.select();
-    document.execCommand("copy");
-    alert("Код скопирован! Теперь вставь его в voice.html на GitHub.");
-}
+    window.pSetT = function(i) {
+        cur = i; a.src = list[cur];
+        document.getElementById('p-track-name').innerText = list[cur].split('/').pop();
+        var l = document.getElementById('p-list-area');
+        l.innerHTML = list.map((t, x) => "<div style='padding:4px; cursor:pointer; opacity:"+(x==cur?1:0.5)+"' onclick='window.pSetT("+x+");window.pPlayA()'>" + (x+1) + ". " + t.split('/').pop() + "</div>").join('');
+    };
 
-update();
+    window.pPlayA = function() { a.play(); document.getElementById('pPlayBtn').innerText = '⏸'; };
+    window.pTglAudio = function() { if(a.paused) { window.pPlayA(); } else { a.pause(); document.getElementById('pPlayBtn').innerText = '▶'; } };
+    window.pNextT = function() { var n = rnd ? Math.floor(Math.random()*list.length) : (cur + 1) % list.length; window.pSetT(n); window.pPlayA(); };
+    window.pPrevT = function() { window.pSetT((cur - 1 + list.length) % list.length); window.pPlayA(); };
+    window.pTglRnd = function() { rnd = !rnd; document.getElementById('pRandIco').style.opacity = rnd ? "1" : "0.3"; };
+    window.pTglLst = function() { var s = document.getElementById('p-list-area'); s.style.display = s.style.display==='none'?'block':'none'; };
+    
+    a.onended = window.pNextT; window.pSetT(0);
+})();
+<\/script>`;
+
+    document.getElementById('finalCode').value = fullCode;
+    document.getElementById('p-view').innerHTML = fullCode;
+}
+function copyC() { document.getElementById("finalCode").select(); document.execCommand("copy"); }
+upd();
 </script>
 </body>
 </html>

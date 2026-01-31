@@ -5,10 +5,14 @@
     <title>Horizontal Pro Player Editor</title>
     <style>
         :root { --accent: #00ffff; }
-        body { font-family: sans-serif; background: #0f0f1a; color: white; display: flex; margin: 0; height: 100vh; }
-        #settings { width: 380px; background: #161625; padding: 20px; border-right: 2px solid var(--accent); overflow-y: auto; }
-        #preview-box { flex: 1; display: flex; justify-content: center; align-items: center; background: #1a1a2e; }
-        .section { background: #22223b; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
+        /* Делаем фон body темным, но позволяем холсту быть видимым */
+        body { font-family: sans-serif; background: #0f0f1a; color: white; display: flex; margin: 0; height: 100vh; overflow: hidden; }
+        
+        /* Делаем панели полупрозрачными (rgba), чтобы сквозь них проплывали иконки */
+        #settings { width: 380px; background: rgba(22, 22, 37, 0.8); padding: 20px; border-right: 2px solid var(--accent); overflow-y: auto; z-index: 10; }
+        #preview-box { flex: 1; display: flex; justify-content: center; align-items: center; background: transparent; z-index: 10; }
+        
+        .section { background: rgba(34, 34, 59, 0.6); padding: 15px; border-radius: 10px; margin-bottom: 20px; }
         label { display: block; font-size: 11px; margin: 10px 0 5px; color: #aaa; text-transform: uppercase; }
         input, textarea { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #444; background: #000; color: #fff; box-sizing: border-box; }
         .btn-main { background: var(--accent); color: #000; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; }
@@ -16,13 +20,11 @@
     </style>
 </head>
 <body>
-<canvas id="bg-canvas" style="position: fixed; top: 0; left: 0; z-index: -1; pointer-events: none;"></canvas>
-<script>
-    const icons = ['🎵', '🎶', '🎧', '📻', '🎸'];
-    setupBackground(icons);
-</script>
+
+<canvas id="bg-canvas" style="position: fixed; top: 0; left: 0; z-index: 1; pointer-events: none;"></canvas>
+
 <div id="settings">
-    <h3>🛠 ГОРИЗОНТАЛЬНЫЙ ПЛЕЕР</h3>
+    <h3>🛠 ГРИЗОНТАЛЬНЫЙ ПЛЕЕР</h3>
     <div class="section">
         <label>Цвет фона</label>
         <input type="color" id="bgCol" value="#1a1a2e" oninput="upd()">
@@ -39,9 +41,50 @@ https://vivanova288-boop.github.io/player/2.mp3</textarea>
     <button class="btn-main" onclick="copyC()">📋 КОПИРОВАТЬ КОД ДЛЯ GENIALLY</button>
     <textarea id="finalCode" class="code-res" readonly></textarea>
 </div>
+
 <div id="preview-box"><div id="p-view"></div></div>
 
 <script>
+function setupBackground(items) {
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    window.onresize = resize; resize();
+
+    class Particle {
+        constructor() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.text = items[Math.floor(Math.random() * items.length)];
+            this.size = Math.random() * 20 + 15;
+            this.speed = Math.random() * 0.5 + 0.2;
+            this.opacity = Math.random() * 0.4 + 0.1;
+        }
+        update() {
+            this.y -= this.speed;
+            if (this.y < -30) { this.y = canvas.height + 30; this.x = Math.random() * canvas.width; }
+        }
+        draw() {
+            ctx.globalAlpha = this.opacity;
+            ctx.fillStyle = "#ffffff";
+            ctx.font = `${this.size}px Arial`;
+            ctx.fillText(this.text, this.x, this.y);
+        }
+    }
+    for (let i = 0; i < 30; i++) particles.push(new Particle());
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => { p.update(); p.draw(); });
+        requestAnimationFrame(animate);
+    }
+    animate();
+}
+
+// Теперь вызываем функцию
+setupBackground(['🎵', '🎶', '🎧', '📻', '🎸']);
+
+// Логика обновления плеера
 function upd() {
     const bg = document.getElementById('bgCol').value;
     const acc = document.getElementById('accCol').value;
@@ -49,73 +92,42 @@ function upd() {
     const rawT = document.getElementById('tracks').value.split('\n').filter(s => s.trim() !== '');
     const jsonT = JSON.stringify(rawT);
 
-    const fullCode = `
-<div id="p-root" style="width: 480px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; font-family: sans-serif;">
-    
-    <div id="p-minus-btn" onclick="window.pViewTgl()" style="width:32px; height:32px; background:${acc}; color:${bg}; border-radius:50%; display:flex; justify-content:center; align-items:center; cursor:pointer; margin-bottom:10px; font-weight:bold; border:2px solid #000; box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-size:20px; z-index:10;">−</div>
-    
-    <div id="p-mini-icon" onclick="window.pViewTgl()" style="display:none; width:50px; height:50px; background:${acc}; border-radius:50%; justify-content:center; align-items:center; font-size:25px; border:2px solid #000; cursor:pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.4); z-index:10;">🎵</div>
-
-    <div id="p-main-card" style="width:100%; background:${bg}; border:2px solid ${acc}; border-radius:20px; padding:20px; color:${acc}; display:flex; gap:20px; box-shadow:0 10px 30px rgba(0,0,0,0.5); box-sizing: border-box; align-items: center;">
-        
+    const fullCode = `<div id="p-root" style="width: 480px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; font-family: sans-serif;">
+    <div id="p-minus-btn" onclick="window.pViewTgl()" style="width:32px; height:32px; background:${acc}; color:${bg}; border-radius:50%; display:flex; justify-content:center; align-items:center; cursor:pointer; margin-bottom:10px; font-weight:bold; border:2px solid #000; font-size:20px;">−</div>
+    <div id="p-mini-icon" onclick="window.pViewTgl()" style="display:none; width:50px; height:50px; background:${acc}; border-radius:50%; justify-content:center; align-items:center; font-size:25px; border:2px solid #000; cursor:pointer;">🎵</div>
+    <div id="p-main-card" style="width:100%; background:${bg}; border:2px solid ${acc}; border-radius:20px; padding:20px; color:${acc}; display:flex; gap:20px; align-items: center;">
         <div style="flex-shrink:0;">
             <div style="width:140px; height:140px; border-radius:15px; background:url('${cov}') center/cover; border:2px solid ${acc};"></div>
             <div id="p-track-name" style="font-size:12px; margin-top:10px; font-weight:bold; text-align:center; width:140px; overflow:hidden; white-space:nowrap;">Track 1</div>
         </div>
-
         <div style="flex-grow:1; display:flex; flex-direction:column; gap:15px;">
             <div style="display:flex; justify-content:center; align-items:center; gap:15px;">
                 <button onclick="window.pPrevT()" style="background:none; border:none; color:${acc}; cursor:pointer; font-size:20px;">⏮</button>
                 <button id="pPlayBtn" onclick="window.pTglAudio()" style="background:${acc}; color:${bg}; border:none; width:45px; height:45px; border-radius:50%; cursor:pointer; font-size:20px;">▶</button>
                 <button onclick="window.pNextT()" style="background:none; border:none; color:${acc}; cursor:pointer; font-size:20px;">⏭</button>
             </div>
-            
             <div id="p-list-area" style="background:rgba(0,0,0,0.3); border-radius:10px; padding:10px; height:80px; overflow-y:auto; font-size:11px; border:1px solid rgba(255,255,255,0.1);"></div>
-            
-            <div style="display:flex; justify-content:center; gap:20px; font-size:20px;">
-                <span id="pRandIco" onclick="window.pTglRnd()" style="cursor:pointer; opacity:0.3;">🔀</span>
-                <span onclick="window.pTglLst()" style="cursor:pointer;">📜</span>
-            </div>
         </div>
         <audio id="pAudioPlayer"></audio>
     </div>
 </div>
-
 <script>
 (function() {
     var list = ${jsonT};
-    var cur = 0, rnd = false, a = document.getElementById('pAudioPlayer');
-    
+    var cur = 0, a = document.getElementById('pAudioPlayer');
     window.pViewTgl = function() {
-        var card = document.getElementById('p-main-card');
-        var mini = document.getElementById('p-mini-icon');
-        var minus = document.getElementById('p-minus-btn');
-        
-        if(card.style.display === 'none') {
-            card.style.display = 'flex';
-            minus.style.display = 'flex';
-            mini.style.display = 'none';
-        } else {
-            card.style.display = 'none';
-            minus.style.display = 'none';
-            mini.style.display = 'flex';
-        }
+        var card = document.getElementById('p-main-card'), mini = document.getElementById('p-mini-icon'), minus = document.getElementById('p-minus-btn');
+        if(card.style.display === 'none') { card.style.display = 'flex'; minus.style.display = 'flex'; mini.style.display = 'none'; } 
+        else { card.style.display = 'none'; minus.style.display = 'none'; mini.style.display = 'flex'; }
     };
-
     window.pSetT = function(i) {
         cur = i; a.src = list[cur];
         document.getElementById('p-track-name').innerText = list[cur].split('/').pop();
-        var l = document.getElementById('p-list-area');
-        l.innerHTML = list.map((t, x) => "<div style='padding:4px; cursor:pointer; opacity:"+(x==cur?1:0.5)+"' onclick='window.pSetT("+x+");window.pPlayA()'>" + (x+1) + ". " + t.split('/').pop() + "</div>").join('');
+        document.getElementById('p-list-area').innerHTML = list.map((t, x) => "<div style='padding:4px; cursor:pointer; opacity:"+(x==cur?1:0.5)+"' onclick='window.pSetT("+x+");a.play();document.getElementById(\"pPlayBtn\").innerText=\"⏸\"'>" + (x+1) + ". " + t.split('/').pop() + "</div>").join('');
     };
-
-    window.pPlayA = function() { a.play(); document.getElementById('pPlayBtn').innerText = '⏸'; };
-    window.pTglAudio = function() { if(a.paused) { window.pPlayA(); } else { a.pause(); document.getElementById('pPlayBtn').innerText = '▶'; } };
-    window.pNextT = function() { var n = rnd ? Math.floor(Math.random()*list.length) : (cur + 1) % list.length; window.pSetT(n); window.pPlayA(); };
-    window.pPrevT = function() { window.pSetT((cur - 1 + list.length) % list.length); window.pPlayA(); };
-    window.pTglRnd = function() { rnd = !rnd; document.getElementById('pRandIco').style.opacity = rnd ? "1" : "0.3"; };
-    window.pTglLst = function() { var s = document.getElementById('p-list-area'); s.style.display = s.style.display==='none'?'block':'none'; };
-    
+    window.pTglAudio = function() { if(a.paused) { a.play(); document.getElementById('pPlayBtn').innerText = '⏸'; } else { a.pause(); document.getElementById('pPlayBtn').innerText = '▶'; } };
+    window.pNextT = function() { window.pSetT((cur + 1) % list.length); a.play(); document.getElementById('pPlayBtn').innerText = '⏸'; };
+    window.pPrevT = function() { window.pSetT((cur - 1 + list.length) % list.length); a.play(); document.getElementById('pPlayBtn').innerText = '⏸'; };
     a.onended = window.pNextT; window.pSetT(0);
 })();
 <\/script>`;
@@ -125,56 +137,6 @@ function upd() {
 }
 function copyC() { document.getElementById("finalCode").select(); document.execCommand("copy"); }
 upd();
-</script>
-    <script>
-function setupBackground(items) {
-    const canvas = document.getElementById('bg-canvas');
-    const ctx = canvas.getContext('2d');
-    let particles = [];
-
-    function resize() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-    }
-    window.onresize = resize;
-    resize();
-
-    class Particle {
-        constructor() {
-            this.x = Math.random() * canvas.width;
-            this.y = Math.random() * canvas.height;
-            this.text = items[Math.floor(Math.random() * items.length)];
-            this.size = Math.random() * 20 + 10;
-            this.speed = Math.random() * 0.5 + 0.2;
-            this.angle = Math.random() * Math.PI * 2;
-            this.opacity = Math.random() * 0.5;
-        }
-        update() {
-            this.y -= this.speed;
-            this.x += Math.sin(this.angle) * 0.5;
-            this.angle += 0.01;
-            if (this.y < -30) {
-                this.y = canvas.height + 30;
-                this.x = Math.random() * canvas.width;
-            }
-        }
-        draw() {
-            ctx.globalAlpha = this.opacity;
-            ctx.font = `${this.size}px Arial`;
-            ctx.fillText(this.text, this.x, this.y);
-        }
-    }
-
-    for (let i = 0; i < 30; i++) particles.push(new Particle());
-
-    function animate() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = "rgba(255, 255, 255, 0.5)"; // Цвет иконок
-        particles.forEach(p => { p.update(); p.draw(); });
-        requestAnimationFrame(animate);
-    }
-    animate();
-}
 </script>
 </body>
 </html>

@@ -18,7 +18,7 @@
 <body>
 
 <div id="settings">
-    <h3>🛠 НАСТРОЙКА ГОРИЗОНТ. ПЛЕЕРА</h3>
+    <h3>🛠 ГОРИЗОНТАЛЬНЫЙ ПЛЕЕР</h3>
     <div class="section">
         <label>Цвет фона</label>
         <input type="color" id="bgCol" value="#1a1a2e" oninput="upd()">
@@ -48,9 +48,9 @@ function upd() {
     const fullCode = `
 <div id="p-root" style="width: 480px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; font-family: sans-serif;">
     
-    <div id="p-tgl-btn" onclick="window.pViewTgl()" style="width:32px; height:32px; background:${acc}; color:${bg}; border-radius:50%; display:flex; justify-content:center; align-items:center; cursor:pointer; margin-bottom:10px; font-weight:bold; border:2px solid #000; box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-size:20px;">−</div>
+    <div id="p-minus-btn" onclick="window.pViewTgl()" style="width:32px; height:32px; background:${acc}; color:${bg}; border-radius:50%; display:flex; justify-content:center; align-items:center; cursor:pointer; margin-bottom:10px; font-weight:bold; border:2px solid #000; box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-size:20px; z-index:10;">−</div>
     
-    <div id="p-mini-icon" onclick="window.pViewTgl()" style="display:none; width:50px; height:50px; background:${acc}; border-radius:50%; justify-content:center; align-items:center; font-size:25px; border:2px solid #000; cursor:pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">🎵</div>
+    <div id="p-mini-icon" onclick="window.pViewTgl()" style="display:none; width:50px; height:50px; background:${acc}; border-radius:50%; justify-content:center; align-items:center; font-size:25px; border:2px solid #000; cursor:pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.4); z-index:10;">🎵</div>
 
     <div id="p-main-card" style="width:100%; background:${bg}; border:2px solid ${acc}; border-radius:20px; padding:20px; color:${acc}; display:flex; gap:20px; box-shadow:0 10px 30px rgba(0,0,0,0.5); box-sizing: border-box; align-items: center;">
         
@@ -83,11 +83,18 @@ function upd() {
     var cur = 0, rnd = false, a = document.getElementById('pAudioPlayer');
     
     window.pViewTgl = function() {
-        var card = document.getElementById('p-main-card'), mini = document.getElementById('p-mini-icon'), btn = document.getElementById('p-tgl-btn');
+        var card = document.getElementById('p-main-card');
+        var mini = document.getElementById('p-mini-icon');
+        var minus = document.getElementById('p-minus-btn');
+        
         if(card.style.display === 'none') {
-            card.style.display = 'flex'; mini.style.display = 'none'; btn.innerText = '−';
+            card.style.display = 'flex';
+            minus.style.display = 'flex';
+            mini.style.display = 'none';
         } else {
-            card.style.display = 'none'; mini.style.display = 'flex'; btn.innerText = '+';
+            card.style.display = 'none';
+            minus.style.display = 'none';
+            mini.style.display = 'flex';
         }
     };
 

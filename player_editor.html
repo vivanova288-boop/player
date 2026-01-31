@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Clean Central Toggle Player</title>
+    <title>Centered Toggle Player</title>
     <style>
         :root { --accent: #00ffff; }
         body { font-family: sans-serif; background: #0f0f1a; color: white; display: flex; margin: 0; height: 100vh; }
@@ -45,10 +45,11 @@ function upd() {
     const rawT = document.getElementById('tracks').value.split('\n').filter(s => s.trim() !== '');
     const jsonT = JSON.stringify(rawT);
 
-    const fullCode = `<div id="pl-wrap" style="display:inline-flex; flex-direction:column; align-items:center; font-family:sans-serif;">
-    <div id="p-btn-tgl" onclick="window.pToggleView()" style="width:50px; height:50px; background:${acc}; border-radius:50%; display:flex; justify-content:center; align-items:center; font-size:25px; border:2px solid ${bg}; cursor:pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.4); z-index:10; margin-bottom:10px; transition: 0.3s;">🎵</div>
+    const fullCode = `
+<div id="p-outer" style="width: 280px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; font-family: sans-serif;">
+    <div id="p-btn-tgl" onclick="window.pToggleView()" style="width:50px; height:50px; background:${acc}; border-radius:50%; display:flex; justify-content:center; align-items:center; font-size:25px; border:2px solid ${bg}; cursor:pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.4); z-index:10; margin-bottom:10px;">🎵</div>
 
-    <div id="p-main-card" style="width:280px; background:${bg}; border:2px solid ${acc}; border-radius:20px; padding:20px; color:${acc}; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+    <div id="p-main-card" style="width:100%; background:${bg}; border:2px solid ${acc}; border-radius:20px; padding:20px; color:${acc}; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.5); box-sizing: border-box;">
         <div style="width:120px; height:120px; margin:0 auto 15px; border-radius:50%; background:url('${cov}') center/cover; border:3px solid ${acc};"></div>
         <div id="p-cur-title" style="font-size:14px; margin-bottom:15px; font-weight:bold; height:18px; overflow:hidden;">Track 1</div>
         
@@ -74,14 +75,7 @@ function upd() {
     
     window.pToggleView = function() {
         var card = document.getElementById('p-main-card');
-        var btn = document.getElementById('p-btn-tgl');
-        if(card.style.display === 'none') {
-            card.style.display = 'block';
-            btn.style.transform = 'scale(1)';
-        } else {
-            card.style.display = 'none';
-            btn.style.transform = 'scale(1.1)';
-        }
+        card.style.display = (card.style.display === 'none') ? 'block' : 'none';
     };
 
     window.pSetTrack = function(i) {
@@ -106,7 +100,7 @@ function upd() {
     document.getElementById('finalCode').value = fullCode;
     document.getElementById('p-view').innerHTML = fullCode;
 }
-function copyC() { document.getElementById("finalCode").select(); document.execCommand("copy"); alert("Код скопирован!"); }
+function copyC() { document.getElementById("finalCode").select(); document.execCommand("copy"); }
 upd();
 </script>
 </body>

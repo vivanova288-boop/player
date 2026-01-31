@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <style>
         body, html { margin: 0; padding: 0; background: transparent; overflow: hidden; font-family: sans-serif; }
+        /* Контейнер прижат к ПРАВОМУ верхнему углу */
         #anchor { position: absolute; top: 5px; right: 5px; display: flex; flex-direction: column; align-items: flex-end; }
         
         #card { 
@@ -11,11 +12,11 @@
             text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.5); transition: 0.3s;
         }
 
-        /* Кнопка сворачивания ТЕПЕРЬ СПРАВА */
+        /* Кнопка сворачивания СПРАВА */
         .btn-tgl { 
             background: #00ffff; color: #1a1a2e; width: 30px; height: 30px; border-radius: 50%; 
             display: flex; justify-content: center; align-items: center; cursor: pointer; 
-            margin-bottom: 5px; font-weight: bold; border: 2px solid #1a1a2e; 
+            margin-bottom: 5px; font-weight: bold; border: 2px solid #1a1a2e; font-size: 20px;
         }
         
         #mini { 
@@ -27,7 +28,7 @@
         input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #00ffff; background: #000; color: #fff; margin: 10px 0; box-sizing: border-box; outline: none; }
         button { width: 100%; background: #00ffff; color: #1a1a2e; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; }
         
-        #res { margin-top: 10px; padding: 10px; background: rgba(0,255,255,0.1); border-radius: 8px; color: #00ffff; font-size: 14px; display: none; line-height: 1.4; }
+        #res { margin-top: 10px; padding: 10px; background: rgba(0,255,255,0.1); border-radius: 8px; color: #00ffff; font-size: 14px; display: none; line-height: 1.4; text-align: left; }
         .hidden { display: none !important; }
     </style>
 </head>
@@ -45,22 +46,30 @@
 <script>
     function tgl() {
         const c = document.getElementById('card'), m = document.getElementById('mini'), b = document.getElementById('btn-m');
-        if (c.classList.contains('hidden')) { c.classList.remove('hidden'); m.style.display='none'; b.style.display='flex'; } 
-        else { c.classList.add('hidden'); m.style.display='flex'; b.style.display='none'; }
+        if (c.style.display === 'none') { c.style.display = 'block'; m.style.display = 'none'; b.style.display = 'flex'; } 
+        else { c.style.display = 'none'; m.style.display = 'flex'; b.style.display = 'none'; }
     }
-    async function tr() {
+    
+    function tr() {
         const text = document.getElementById('inp').value;
         const resDiv = document.getElementById('res');
         if (!text) return;
-        resDiv.style.display = 'block'; resDiv.innerText = 'Searching...';
-        try {
-            // Используем более качественный запрос
-            const r = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|ru&de=your@email.com`);
-            const d = await r.json();
-            let result = d.responseData.translatedText;
-            // Убираем возможные странности перевода
-            resDiv.innerHTML = `<b>Result:</b><br>\${result.toLowerCase()}`;
-        } catch (e) { resDiv.innerText = 'Service busy, try again'; }
+        
+        resDiv.style.display = 'block';
+        resDiv.innerText = 'Searching...';
+        
+        // Используем прямой URL без сложных переменных для надежности
+        var url = "https://api.mymemory.translated.net/get?q=" + encodeURIComponent(text) + "&langpair=en|ru";
+        
+        fetch(url)
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                var result = data.responseData.translatedText;
+                resDiv.innerHTML = "<b>Result:</b><br>" + result.toLowerCase();
+            })
+            .catch(function() {
+                resDiv.innerText = "Error. Try again.";
+            });
     }
 </script>
 </body>

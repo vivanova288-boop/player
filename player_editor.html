@@ -5,13 +5,9 @@
     <title>Horizontal Pro Player Editor</title>
     <style>
         :root { --accent: #00ffff; }
-        /* Делаем фон body темным, но позволяем холсту быть видимым */
         body { font-family: sans-serif; background: #0f0f1a; color: white; display: flex; margin: 0; height: 100vh; overflow: hidden; }
-        
-        /* Делаем панели полупрозрачными (rgba), чтобы сквозь них проплывали иконки */
         #settings { width: 380px; background: rgba(22, 22, 37, 0.8); padding: 20px; border-right: 2px solid var(--accent); overflow-y: auto; z-index: 10; }
         #preview-box { flex: 1; display: flex; justify-content: center; align-items: center; background: transparent; z-index: 10; }
-        
         .section { background: rgba(34, 34, 59, 0.6); padding: 15px; border-radius: 10px; margin-bottom: 20px; }
         label { display: block; font-size: 11px; margin: 10px 0 5px; color: #aaa; text-transform: uppercase; }
         input, textarea { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #444; background: #000; color: #fff; box-sizing: border-box; }
@@ -24,7 +20,7 @@
 <canvas id="bg-canvas" style="position: fixed; top: 0; left: 0; z-index: 1; pointer-events: none;"></canvas>
 
 <div id="settings">
-    <h3>🛠 ГРИЗОНТАЛЬНЫЙ ПЛЕЕР</h3>
+    <h3>🛠 ГОРИЗОНТАЛЬНЫЙ ПЛЕЕР</h3>
     <div class="section">
         <label>Цвет фона</label>
         <input type="color" id="bgCol" value="#1a1a2e" oninput="upd()">
@@ -81,15 +77,15 @@ function setupBackground(items) {
     animate();
 }
 
-// Теперь вызываем функцию
 setupBackground(['🎵', '🎶', '🎧', '📻', '🎸']);
 
-// Логика обновления плеера
 function upd() {
+    // Исправлено: берем данные по ПРАВИЛЬНЫМ ID из формы
     const bg = document.getElementById('bgCol').value;
     const acc = document.getElementById('accCol').value;
-    const cov = document.getElementById('covUrl').value || 'https://media.tenor.com/eMrZP9HBkqEAAAAi/frkst-recc';
-    const tracks = document.getElementById('trList').value.split('\n').filter(t => t.trim() !== '');
+    const cov = document.getElementById('cover').value; 
+    const trArea = document.getElementById('tracks').value;
+    const tracks = trArea.split('\n').filter(t => t.trim() !== '');
     const jsonT = JSON.stringify(tracks);
 
     const fullCode = `<div id="p-root" style="width: 480px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; font-family: sans-serif; position: relative;">
@@ -177,7 +173,8 @@ function upd() {
 })();
 <\/script>`;
     document.getElementById('finalCode').value = fullCode;
-    document.getElementById('d-view').innerHTML = fullCode; // Эта строчка вернет плеер в окно!
+    // Исправлено: ID должен быть p-view, чтобы попасть в блок предпросмотра!
+    document.getElementById('p-view').innerHTML = fullCode; 
 }
 function copyC() { document.getElementById("finalCode").select(); document.execCommand("copy"); }
 upd();

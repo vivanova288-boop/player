@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Professional Player Editor</title>
+    <style>
+        :root { --accent: #00ffff; --purp: #5e35b1; }
+        body { font-family: sans-serif; background: #0f0f1a; color: white; display: flex; margin: 0; height: 100vh; }
+        #settings { width: 380px; background: #161625; padding: 20px; border-right: 2px solid var(--accent); overflow-y: auto; }
+        #preview-box { flex: 1; display: flex; justify-content: center; align-items: center; background: #1a1a2e; position: relative; }
+        
+        .section { background: #22223b; padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #333; }
+        h3 { color: var(--accent); margin-top: 0; font-size: 16px; border-bottom: 1px solid #444; padding-bottom: 10px; }
+        
+        label { display: block; font-size: 11px; margin: 10px 0 5px; color: #aaa; text-transform: uppercase; }
+        input, textarea { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #444; background: #000; color: #fff; box-sizing: border-box; }
+        
+        .btn-main { background: var(--accent); color: #000; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; margin-top: 10px; }
+        .code-res { height: 80px; background: #000; color: #0f0; font-family: monospace; font-size: 10px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div id="settings">
+    <h3>🎨 НАСТРОЙКА ПЛЕЕРА</h3>
+    
+    <div class="section">
+        <label>Цвет фона</label>
+        <input type="color" id="bgCol" value="#1a1a2e" oninput="upd()">
+        <label>Цвет элементов (Акцент)</label>
+        <input type="color" id="accCol" value="#00ffff" oninput="upd()">
+    </div>
+
+    <div class="section">
+        <label>Обложка (URL картинки)</label>
+        <input type="text" id="cover" value="https://i.pinimg.com/originals/f3/d3/18/f3d318451125219277d70428d097945c.gif" oninput="upd()">
+        <label>Список MP3 ссылок (по одной в строке)</label>
+        <textarea id="tracks" rows="4" oninput="upd()">https://vivanova288-boop.github.io/player/1.mp3
+https://vivanova288-boop.github.io/player/2.mp3</textarea>
+    </div>
+
+    <button class="btn-main" onclick="copyC()">📋 ПОЛУЧИТЬ КОД ДЛЯ GENIALLY</button>
+    <textarea id="finalCode" class="code-res" readonly></textarea>
+</div>
+
+<div id="preview-box">
+    <div id="p-view"></div>
+</div>
+
+<script>
+function upd() {
+    const bg = document.getElementById('bgCol').value;
+    const acc = document.getElementById('accCol').value;
+    const cov = document.getElementById('cover').value;
+    const rawT = document.getElementById('tracks').value.split('\n').filter(s => s.trim() !== '');
+    const jsonT = JSON.stringify(rawT);
+
+    const fullCode = `
+<div id="music-p" style="width:280px; background:${bg}; border:2px solid ${acc}; border-radius:20px; padding:20px; color:${acc}; font-family:sans-serif; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+    <div style="width:120px; height:120px; margin:0 auto 15px; border-radius:50%; background:url('${cov}') center/cover; border:3px solid ${acc};"></div>
+    <div id="t-title" style="font-size:14px; font-weight:bold; margin-bottom:15px; height:18px; overflow:hidden;">Track 1</div>
+    
+    <div style="display:flex; justify-content:center; align-items:center; gap:20px; margin-bottom:20px;">
+        <button onclick="pTr()" style="background:none; border:none; color:${acc}; cursor:pointer; font-size:24px;">⏮</button>
+        <button id="pBtn" onclick="tglP()" style="background:${acc}; color:${bg}; border:none; width:50px; height:50px; border-radius:50%; cursor:pointer; font-size:24px; font-weight:bold;">▶</button>
+        <button onclick="nTr()" style="background:none; border:none; color:${acc}; cursor:pointer; font-size:24px;">⏭</button>
+    </div>
+
+    <div style="display:flex; justify-content:center; gap:15px; font-size:22px;">
+        <span id="rdBtn" onclick="tglR()" style="cursor:pointer; opacity:0.3;">🔀</span>
+        <span onclick="tglL()" style="cursor:pointer;">📜</span>
+    </div>
+
+    <div id="p-list" style="display:none; margin-top:15px; text-align:left; font-size:11px; max-height:100px; overflow-y:auto; border-top:1px solid ${acc}; padding-top:10px;"></div>
+    <audio id="aud"></audio>
+</div>
+
+<script>
+    var list = ${jsonT};
+    var idx = 0, rnd = false, a = document.getElementById('aud');
+    
+    function setT(i) {
+        idx = i; a.src = list[idx];
+        document.getElementById('t-title').innerText = list[idx].split('/').pop();
+        drawL();
+    }
+    function tglP() {
+        if(a.paused) { a.play(); document.getElementById('pBtn').innerText = '⏸'; }
+        else { a.pause(); document.getElementById('pBtn').innerText = '▶'; }
+    }
+    function nTr() {
+        let n = rnd ? Math.floor(Math.random()*list.length) : (idx + 1) % list.length;
+        setT(n); a.play(); document.getElementById('pBtn').innerText = '⏸';
+    }
+    function pTr() { setT((idx - 1 + list.length) % list.length); a.play(); }
+    function tglR() { rnd = !rnd; document.getElementById('rdBtn').style.opacity = rnd ? "1" : "0.3"; }
+    function tglL() { var l = document.getElementById('p-list'); l.style.display = l.style.display==='none'?'block':'none'; }
+    function drawL() {
+        document.getElementById('p-list').innerHTML = list.map((t, i) => 
+            "<div style='padding:4px; cursor:pointer; color:"+(i==idx? "#fff" : "${acc}")+"' onclick='setT("+i+");a.play();document.getElementById(\"pBtn\").innerText=\"⏸\"'>" + (i+1) + ". " + t.split('/').pop() + "</div>"
+        ).join('');
+    }
+    a.onended = nTr; setT(0);
+<\/script>`;
+
+    document.getElementById('finalCode').value = fullCode;
+    document.getElementById('p-view').innerHTML = fullCode;
+}
+
+function copyC() {
+    document.getElementById("finalCode").select();
+    document.execCommand("copy");
+    alert("Код для Genially скопирован!");
+}
+upd();
+</script>
+</body>
+</html>

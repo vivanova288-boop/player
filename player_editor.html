@@ -88,64 +88,119 @@ setupBackground(['🎵', '🎶', '🎧', '📻', '🎸']);
 function upd() {
     const bg = document.getElementById('bgCol').value;
     const acc = document.getElementById('accCol').value;
-    const cov = document.getElementById('cover').value;
-    const rawT = document.getElementById('tracks').value.split('\n').filter(s => s.trim() !== '');
-    const jsonT = JSON.stringify(rawT);
+    const cov = document.getElementById('covUrl').value || 'https://via.placeholder.com/120';
+    const tracks = document.getElementById('trList').value.split('\n').filter(t => t.trim() !== '');
+    const jsonT = JSON.stringify(tracks);
 
-// Найди в коде место, где формируется fullCode, и замени на это:
-const fullCode = `<div id="p-root" style="width: 480px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; font-family: sans-serif;">
-    <div id="p-minus-btn" onclick="window.pViewTgl()" style="width:32px; height:32px; background:${acc}; color:${bg}; border-radius:50%; display:flex; justify-content:center; align-items:center; cursor:pointer; margin-bottom:10px; font-weight:bold; border:2px solid #000; font-size:20px;">−</div>
+    const fullCode = `<div id="p-root" style="width: 480px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; font-family: sans-serif; position: relative;">
+    <div id="p-minus-btn" onclick="window.pViewTgl()" style="width:32px; height:32px; background:${acc}; color:#000; border-radius:50%; display:flex; justify-content:center; align-items:center; cursor:pointer; margin-bottom:10px; font-weight:bold; border:2px solid #000; font-size:20px; z-index:5;">−</div>
     <div id="p-mini-icon" onclick="window.pViewTgl()" style="display:none; width:50px; height:50px; background:${acc}; border-radius:50%; justify-content:center; align-items:center; font-size:25px; border:2px solid #000; cursor:pointer;">🎵</div>
     
-    <div id="p-main-card" style="width:100%; background:${bg}; border:2px solid ${acc}; border-radius:20px; padding:20px; color:${acc}; display:flex; gap:20px; align-items: center; box-sizing: border-box;">
-        <div style="flex-shrink:0;">
-            <div style="width:120px; height:120px; border-radius:15px; background:url('${cov}') center/cover; border:2px solid ${acc};"></div>
-            <div style="display:flex; align-items:center; gap:5px; margin-top:10px;">
-                <span>🔈</span>
-                <input type="range" id="p-vol" min="0" max="1" step="0.05" value="0.5" oninput="document.getElementById('pAudioPlayer').volume=this.value" style="width:100%; cursor:pointer; accent-color:${acc};">
+    <div id="p-main-card" style="width:100%; background:${bg}; border:2px solid ${acc}; border-radius:20px; padding:20px; color:${acc}; display:flex; gap:20px; align-items: center; box-sizing: border-box; position: relative;">
+        <div style="flex-shrink:0; text-align:center;">
+            <div id="p-disk" style="width:120px; height:120px; border-radius:15px; background:url('${cov}') center/cover; border:2px solid ${acc}; transition: transform 0.3s ease;"></div>
+            <div style="margin-top:8px; font-size:10px; font-weight:bold; max-width:120px; overflow:hidden; white-space:nowrap;" id="p-track-name">No track</div>
+        </div>
+
+        <div style="flex-grow:1; display:flex; flex-direction:column; gap:12px;">
+            <div style="display:flex; justify-content:center; align-items:center; gap:15px;">
+                <button onclick="window.pPrevT()" style="background:none; border:none; color:${acc}; cursor:pointer; font-size:24px;">⏮</button>
+                <button id="pPlayBtn" onclick="window.pTglAudio()" style="background:${acc}; color:${bg}; border:none; width:45px; height:45px; border-radius:50%; cursor:pointer; font-size:20px; display:flex; justify-content:center; align-items:center;">▶</button>
+                <button onclick="window.pNextT()" style="background:none; border:none; color:${acc}; cursor:pointer; font-size:24px;">⏭</button>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:8px; background:rgba(0,0,0,0.2); padding:5px 10px; border-radius:10px;">
+                <span style="font-size:12px;">🔈</span>
+                <input type="range" id="p-vol" min="0" max="1" step="0.05" value="0.5" style="width:100%; cursor:pointer; accent-color:${acc};">
+                <span style="font-size:12px;">🔊</span>
+            </div>
+
+            <div style="display:flex; justify-content:center; gap:20px; font-size:18px;">
+                <span id="p-shuf-btn" onclick="window.pTglShuf()" style="cursor:pointer; opacity:0.5;" title="Shuffle">🔀</span>
+                <span onclick="window.pTglList()" style="cursor:pointer;" title="Playlist">📜</span>
             </div>
         </div>
 
-        <div style="flex-grow:1; display:flex; flex-direction:column; gap:10px;">
-            <div id="p-track-name" style="font-size:12px; font-weight:bold; text-align:center;">Track 1</div>
-            <div style="display:flex; justify-content:center; align-items:center; gap:15px;">
-                <button onclick="window.pPrevT()" style="background:none; border:none; color:${acc}; cursor:pointer; font-size:20px;">⏮</button>
-                <button id="pPlayBtn" onclick="window.pTglAudio()" style="background:${acc}; color:${bg}; border:none; width:45px; height:45px; border-radius:50%; cursor:pointer; font-size:20px;">▶</button>
-                <button onclick="window.pNextT()" style="background:none; border:none; color:${acc}; cursor:pointer; font-size:20px;">⏭</button>
-            </div>
-            <div id="p-list-area" style="background:rgba(0,0,0,0.3); border-radius:10px; padding:10px; height:60px; overflow-y:auto; font-size:11px; border:1px solid rgba(255,255,255,0.1);"></div>
-        </div>
+        <div id="p-playlist" style="display:none; position:absolute; top:100%; left:0; width:100%; background:${bg}; border:2px solid ${acc}; border-top:none; border-radius:0 0 20px 20px; padding:10px; box-sizing:border-box; z-index:4; max-height:150px; overflow-y:auto; font-size:12px;"></div>
+        
         <audio id="pAudioPlayer"></audio>
     </div>
 </div>
+
 <script>
 (function() {
     var list = ${jsonT};
-    var cur = 0, a = document.getElementById('pAudioPlayer');
-    a.volume = 0.5; // Громкость по умолчанию
-    
+    var cur = 0, isShuf = false;
+    var a = document.getElementById('pAudioPlayer');
+    var btn = document.getElementById('pPlayBtn');
+    var volInp = document.getElementById('p-vol');
+
+    // Логика громкости
+    volInp.oninput = function() { a.volume = this.value; };
+    a.volume = 0.5;
+
     window.pViewTgl = function() {
-        var card = document.getElementById('p-main-card'), mini = document.getElementById('p-mini-icon'), minus = document.getElementById('p-minus-btn');
-        card.style.display = (card.style.display === 'none') ? 'flex' : 'none';
-        minus.style.display = (minus.style.display === 'none') ? 'flex' : 'none';
-        mini.style.display = (mini.style.display === 'none') ? 'flex' : 'none';
+        var card = document.getElementById('p-main-card'), mini = document.getElementById('p-mini-icon'), minus = document.getElementById('p-minus-btn'), listPanel = document.getElementById('p-playlist');
+        var isHiding = card.style.display !== 'none';
+        card.style.display = isHiding ? 'none' : 'flex';
+        minus.style.display = isHiding ? 'none' : 'flex';
+        mini.style.display = isHiding ? 'flex' : 'none';
+        if(isHiding) listPanel.style.display = 'none';
     };
-    
+
+    window.pTglList = function() {
+        var p = document.getElementById('p-playlist');
+        p.style.display = p.style.display === 'none' ? 'block' : 'none';
+    };
+
+    window.pTglShuf = function() {
+        isShuf = !isShuf;
+        document.getElementById('p-shuf-btn').style.opacity = isShuf ? '1' : '0.5';
+    };
+
     window.pSetT = function(i) {
-        cur = i; a.src = list[cur];
+        cur = i; 
+        if(!list[cur]) return;
+        a.src = list[cur];
         document.getElementById('p-track-name').innerText = list[cur].split('/').pop();
-        document.getElementById('p-list-area').innerHTML = list.map((t, x) => "<div style='padding:4px; cursor:pointer; opacity:"+(x==cur?1:0.5)+"' onclick='window.pSetT("+x+");a.play();document.getElementById(\"pPlayBtn\").innerText=\"⏸\"'>" + (x+1) + ". " + t.split('/').pop() + "</div>").join('');
+        
+        // Обновляем плейлист визуально
+        document.getElementById('p-playlist').innerHTML = list.map((t, x) => 
+            "<div style='padding:5px; cursor:pointer; border-bottom:1px solid rgba(255,255,255,0.1); opacity:"+(x==cur?1:0.6)+"' onclick='window.pSetT("+x+");window.pTglAudio();'>" + (x+1) + ". " + t.split('/').pop() + "</div>"
+        ).join('');
     };
-    
-    window.pTglAudio = function() { if(a.paused) { a.play(); document.getElementById('pPlayBtn').innerText = '⏸'; } else { a.pause(); document.getElementById('pPlayBtn').innerText = '▶'; } };
-    window.pNextT = function() { window.pSetT((cur + 1) % list.length); a.play(); document.getElementById('pPlayBtn').innerText = '⏸'; };
-    window.pPrevT = function() { window.pSetT((cur - 1 + list.length) % list.length); a.play(); document.getElementById('pPlayBtn').innerText = '⏸'; };
-    a.onended = window.pNextT; window.pSetT(0);
+
+    window.pTglAudio = function() {
+        if(!a.src && list.length > 0) window.pSetT(cur);
+        if(a.paused) { 
+            a.play().catch(e => console.log("Click to play")); 
+            btn.innerText = '⏸';
+            document.getElementById('p-disk').style.transform = 'scale(1.05) rotate(5deg)';
+        } else { 
+            a.pause(); 
+            btn.innerText = '▶'; 
+            document.getElementById('p-disk').style.transform = 'scale(1)';
+        }
+    };
+
+    window.pNextT = function() {
+        var next = isShuf ? Math.floor(Math.random() * list.length) : (cur + 1) % list.length;
+        window.pSetT(next);
+        a.play(); btn.innerText = '⏸';
+    };
+
+    window.pPrevT = function() {
+        var prev = (cur - 1 + list.length) % list.length;
+        window.pSetT(prev);
+        a.play(); btn.innerText = '⏸';
+    };
+
+    a.onended = window.pNextT;
+    if(list.length > 0) window.pSetT(0);
 })();
 <\/script>`;
-
     document.getElementById('finalCode').value = fullCode;
-    document.getElementById('p-view').innerHTML = fullCode;
+    document.getElementById('d-view').innerHTML = fullCode;
 }
 function copyC() { document.getElementById("finalCode").select(); document.execCommand("copy"); }
 upd();
